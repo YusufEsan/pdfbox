@@ -16,10 +16,12 @@ export default function AddPageNumbersTool() {
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewAspectRatio, setPreviewAspectRatio] = useState<number>(3/4);
   
   // Customization state
   const [position, setPosition] = useState<Position>('bottom-center');
-  const [format, setFormat] = useState<string>('{n}'); // {n} for current, {t} for total
+  const [format, setFormat] = useState<string>('{n} / {t}'); // default format
   const [fontSize, setFontSize] = useState<number>(12);
 
   const handleFileSelected = async (files: File[]) => {
@@ -30,6 +32,22 @@ export default function AddPageNumbersTool() {
       const arrayBuffer = await selectedFile.arrayBuffer();
       const pdf = await PDFDocument.load(arrayBuffer);
       setTotalPages(pdf.getPageCount());
+
+      // Generate preview of the first page
+      const loadingTask = pdfjs.getDocument({ data: arrayBuffer.slice(0) });
+      const pdfjsDoc = await loadingTask.promise;
+      const page = await pdfjsDoc.getPage(1);
+      const viewport = page.getViewport({ scale: 1.0 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      if (context) {
+        await page.render({ canvasContext: context, viewport, canvas }).promise;
+        setPreviewUrl(canvas.toDataURL('image/jpeg', 0.8));
+        setPreviewAspectRatio(viewport.width / viewport.height);
+      }
     } catch (error) {
       console.error('Error loading PDF:', error);
     }
@@ -126,8 +144,9 @@ export default function AddPageNumbersTool() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Konumlandırma Mimarisi */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Ayarlar Kolonu */}
+            <div className="lg:col-span-5 space-y-6">
             <div className="p-6 rounded-3xl border border-border bg-card space-y-6">
               <div>
                 <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider">Konum</h3>
@@ -201,6 +220,53 @@ export default function AddPageNumbersTool() {
                       className="w-full accent-primary"
                     />
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sağ Kolon: Canlı Önizleme */}
+            <div className="lg:col-span-7 flex flex-col">
+              <div className="p-4 sm:p-6 rounded-3xl border border-border bg-card flex-1 flex flex-col">
+                <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider flex items-center justify-between">
+                  <span>Canlı Önizleme</span>
+                  <span className="text-xs font-normal Normal-case px-2 py-1 bg-secondary rounded-md text-primary">{position}</span>
+                </h3>
+                
+                <div className="flex-1 min-h-[400px] flex items-center justify-center bg-secondary/30 rounded-2xl border border-border/50 p-4 sm:p-8 overflow-hidden relative">
+                  {previewUrl ? (
+                    <div 
+                      className="relative bg-white shadow-xl flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-zinc-700 pointer-events-none"
+                      style={{ 
+                        aspectRatio: previewAspectRatio,
+                        width: previewAspectRatio > 1 ? '100%' : 'auto',
+                        height: previewAspectRatio > 1 ? 'auto' : '100%',
+                        maxHeight: '100%',
+                        maxWidth: '100%'
+                      }}
+                    >
+                      <img src={previewUrl} alt="İlk sayfa önizleme" className="w-full h-full object-contain" />
+                      
+                      {/* Önizleme Sayfa Numarası Overlayer */}
+                      <div 
+                        className="absolute tracking-tight font-medium text-black"
+                        style={{
+                          fontSize: `${Math.max(10, fontSize * 0.7)}px`, // Görsel önizleme için fontu biraz scale ediyoruz
+                          ...(position.includes('top') ? { top: '8%' } : { bottom: '8%' }),
+                          ...(position.includes('left') ? { left: '8%' } : {}),
+                          ...(position.includes('right') ? { right: '8%' } : {}),
+                          ...(position.includes('center') ? { left: '50%', transform: 'translateX(-50%)' } : {}),
+                        }}
+                      >
+                        {format.replace('{n}', '1').replace('{t}', totalPages.toString())}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                      <Loader2 className="animate-spin" size={32} />
+                      <p className="text-sm font-medium">Önizleme hazırlanıyor...</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
