@@ -15,7 +15,7 @@ export default function RotateTool() {
   const [rotationMode, setRotationMode] = useState<'all' | 'individual'>('all');
   const [rotation, setRotation] = useState(0); 
   const [individualRotations, setIndividualRotations] = useState<number[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [previews, setPreviews] = useState<{ url: string, aspectRatio: number }[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
 
@@ -24,7 +24,7 @@ export default function RotateTool() {
       const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
       const pdf = await loadingTask.promise;
       const numPages = pdf.numPages;
-      const previewUrls: string[] = [];
+      const previewUrls: { url: string, aspectRatio: number }[] = [];
 
       for (let i = 1; i <= numPages; i++) {
         const page = await pdf.getPage(i);
@@ -36,7 +36,10 @@ export default function RotateTool() {
 
         if (context) {
           await page.render({ canvasContext: context, viewport, canvas: canvas }).promise;
-          previewUrls.push(canvas.toDataURL());
+          previewUrls.push({ 
+            url: canvas.toDataURL(), 
+            aspectRatio: viewport.width / viewport.height 
+          });
         }
       }
       setPreviews(previewUrls);
@@ -171,10 +174,13 @@ export default function RotateTool() {
                           : "border-border hover:border-primary/30 hover:bg-secondary"
                       )}
                     >
-                      <div className="relative w-12 h-16 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-sm shadow-sm flex items-center justify-center overflow-hidden">
+                      <div 
+                        className="relative w-16 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-sm shadow-sm flex items-center justify-center overflow-hidden"
+                        style={{ aspectRatio: previews[0]?.aspectRatio || (3/4) }}
+                      >
                         {previews[0] ? (
                           <img 
-                            src={previews[0]} 
+                            src={previews[0].url} 
                             alt="page preview" 
                             className="w-full h-full object-contain transition-transform duration-300"
                             style={{ transform: `rotate(${angle}deg)` }}
@@ -198,14 +204,14 @@ export default function RotateTool() {
                   <div key={idx} className="relative group p-4 rounded-2xl border border-border bg-card hover:border-primary/50 transition-all">
                     <div className="flex flex-col items-center gap-3">
                       <div 
-                        className="relative w-24 h-32 bg-secondary/30 rounded-lg shadow-md flex items-center justify-center overflow-hidden border border-border/50 transition-transform duration-500"
-                        style={{ transform: `rotate(${angle}deg)` }}
+                        className="relative w-24 bg-secondary/30 rounded-lg shadow-md flex items-center justify-center overflow-hidden border border-border/50 transition-transform duration-500"
+                        style={{ transform: `rotate(${angle}deg)`, aspectRatio: previews[idx]?.aspectRatio || (3/4) }}
                       >
                         {/* Blurred Background */}
                         {previews[idx] && (
                           <div className="absolute inset-[-100%] z-0 pointer-events-none">
                             <img 
-                              src={previews[idx]} 
+                              src={previews[idx].url} 
                               alt="" 
                               className="w-full h-full object-cover blur-3xl opacity-30"
                               style={{ transform: 'scale(1.5)' }}
@@ -214,7 +220,7 @@ export default function RotateTool() {
                         )}
                         {previews[idx] ? (
                           <img 
-                            src={previews[idx]} 
+                            src={previews[idx].url} 
                             alt={`page ${idx + 1}`} 
                             className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
                           />

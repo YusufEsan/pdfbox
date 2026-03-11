@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { motion, Reorder } from 'framer-motion';
 
 export default function ImageToPdfTool() {
-  const [images, setImages] = useState<{ id: string, file: File, preview: string }[]>([]);
+  const [images, setImages] = useState<{ id: string, file: File, preview: string, aspectRatio?: number }[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isAddingImages, setIsAddingImages] = useState(false);
 
@@ -19,10 +19,18 @@ export default function ImageToPdfTool() {
     // Ensure loading state is visible for at least a short period
     const delayPromise = new Promise(resolve => setTimeout(resolve, 800));
 
-    const newImages = newFiles.map(file => ({
-      id: Math.random().toString(36).substr(2, 9),
-      file,
-      preview: URL.createObjectURL(file)
+    const newImages = await Promise.all(newFiles.map(async file => {
+      const preview = URL.createObjectURL(file);
+      const img = new Image();
+      img.src = preview;
+      await new Promise(resolve => img.onload = resolve);
+      
+      return {
+        id: Math.random().toString(36).substr(2, 9),
+        file,
+        preview,
+        aspectRatio: img.width / img.height
+      };
     }));
     
     await delayPromise;
@@ -183,13 +191,16 @@ export default function ImageToPdfTool() {
                 )}
               >
                 {/* Image Preview */}
-                <div className="aspect-video relative overflow-hidden bg-secondary/30">
+                <div 
+                  className="relative overflow-hidden bg-secondary/30 flex items-center justify-center min-h-[150px]"
+                  style={{ aspectRatio: img.aspectRatio || (16/9) }}
+                >
                   <img 
                     src={img.preview} 
                     alt={img.file.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                   
                   {/* Reorder Arrows & Delete Top Right */}
                   <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

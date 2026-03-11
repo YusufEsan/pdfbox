@@ -26,6 +26,7 @@ interface PageItem {
   id: string; // Unique ID for Reorder.Item
   index: number; // Original page index (1-based)
   thumbnail: string;
+  aspectRatio: number;
 }
 
 export default function ReorderPagesTool() {
@@ -72,7 +73,8 @@ export default function ReorderPagesTool() {
         loadedPages.push({
           id: `page-${i}-${Math.random().toString(36).substr(2, 9)}`,
           index: i,
-          thumbnail: canvas.toDataURL('image/jpeg', 0.8)
+          thumbnail: canvas.toDataURL('image/jpeg', 0.8),
+          aspectRatio: viewport.width / viewport.height
         });
       }
 
@@ -236,11 +238,14 @@ export default function ReorderPagesTool() {
                       <GripVertical size={18} className="shrink-0 hidden sm:block" />
                     </div>
 
-                    <div className="h-16 w-12 sm:h-24 sm:w-16 bg-muted rounded-lg overflow-hidden border border-border/50 shrink-0 shadow-sm transition-transform group-hover:scale-105">
+                    <div 
+                      className="bg-muted rounded-lg overflow-hidden border border-border/50 shrink-0 shadow-sm transition-transform group-hover:scale-105"
+                      style={{ height: '5rem', aspectRatio: page.aspectRatio || (3/4) }}
+                    >
                       <img 
                         src={page.thumbnail} 
                         alt={`Sayfa ${page.index}`} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     </div>
 
