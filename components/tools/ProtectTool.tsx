@@ -24,6 +24,7 @@ export default function ProtectTool() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [strength, setStrength] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
 
   useEffect(() => {
     // Basic password strength logic
@@ -41,34 +42,54 @@ export default function ProtectTool() {
     setIsSuccess(false);
   };
 
-  const protectPDF = async () => {
+  const runProcess = async () => {
     if (!file || !password) return;
     setIsProcessing(true);
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      // Load and save with pdf-lib to ensure valid structure
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      const pdfBytes = await pdfDoc.save();
       
-      // Apply encryption
-      const encryptedBytes = await encryptPDF(pdfBytes, password);
-      
-      const blob = new Blob([encryptedBytes as any], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `sifreli_${file.name}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      if (mode === 'encrypt') {
+        const pdfDoc = await PDFDocument.load(arrayBuffer);
+        const pdfBytes = await pdfDoc.save();
+        
+        const encryptedBytes = await encryptPDF(pdfBytes, password);
+        
+        const blob = new Blob([encryptedBytes as any], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `sifreli_${file.name}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        // Decrypt mode
+        const pdfDoc = await PDFDocument.load(arrayBuffer, { password: password } as any);
+        const pdfBytes = await pdfDoc.save(); // Saves without encryption unless specified
+        
+        const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `kilit_acik_${file.name}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
       
       setIsSuccess(true);
-    } catch (error) {
-      console.error('Encryption error:', error);
-      alert('Şifreleme işlemi sırasında bir hata oluştu.');
+    } catch (error: any) {
+      console.error('Process error:', error);
+      if (mode === 'decrypt') {
+        alert('Şifre hatalı veya çözümleme sırasında bir hata oluştu.');
+      } else {
+        alert('Şifreleme işlemi sırasında bir hata oluştu.');
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -93,10 +114,25 @@ export default function ProtectTool() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">PDF Şifrele</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">PDF Şifre İşlemleri</h2>
         <p className="text-muted-foreground mt-2">
-          PDF dosyalarınıza parola ekleyerek verilerinizi koruyun.
+          PDF dosyalarınıza parola ekleyin veya parolası bilinen dosyaların şifresini kalıcı olarak kaldırın.
         </p>
+      </div>
+
+      <div className="flex bg-secondary p-1 rounded-2xl w-fit border border-border">
+        <button 
+          onClick={() => setMode('encrypt')}
+          className={cn("px-6 py-2.5 rounded-xl font-medium text-sm transition-all flex items-center gap-2", mode === 'encrypt' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+        >
+          <Lock size={16} /> Şifrele (Koru)
+        </button>
+        <button 
+          onClick={() => setMode('decrypt')}
+          className={cn("px-6 py-2.5 rounded-xl font-medium text-sm transition-all flex items-center gap-2", mode === 'decrypt' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+        >
+          <Unlock size={16} /> Şifreyi Kaldır
+        </button>
       </div>
 
       {!file ? (
@@ -131,13 +167,15 @@ export default function ProtectTool() {
           {!isSuccess ? (
             <div className="p-8 rounded-3xl border border-border bg-card space-y-6 shadow-xl relative overflow-hidden">
               <div className="space-y-4">
-                <label className="text-sm font-bold block text-muted-foreground">Dosya Parolasını Belirleyin</label>
+                <label className="text-sm font-bold block text-muted-foreground">
+                  {mode === 'encrypt' ? 'Dosya Parolasını Belirleyin' : 'PDF\'in Mevcut Şifresini Girin'}
+                </label>
                 <div className="relative group">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Güçlü bir parola girin..."
+                    placeholder={mode === 'encrypt' ? "Güçlü bir parola girin..." : "Şifreyi girin..."}
                     className="w-full h-14 bg-secondary/50 border border-border rounded-2xl px-12 focus:ring-2 focus:ring-primary outline-none transition-all font-medium text-lg placeholder:text-muted-foreground/50"
                   />
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={20} />
@@ -149,43 +187,56 @@ export default function ProtectTool() {
                   </button>
                 </div>
 
-                {/* Strength Meter */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-xs font-bold">
-                    <span className="text-muted-foreground">Parola Gücü</span>
-                    <span className={cn(
-                      strength === 0 ? "text-muted-foreground" : 
-                      strength <= 2 ? "text-red-500" : 
-                      strength <= 3 ? "text-orange-500" : 
-                      strength <= 4 ? "text-yellow-500" : "text-emerald-500"
-                    )}>
-                      {getStrengthLabel()}
-                    </span>
+                {/* Strength Meter - Only show for encrypt */}
+                {mode === 'encrypt' && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-xs font-bold">
+                      <span className="text-muted-foreground">Parola Gücü</span>
+                      <span className={cn(
+                        strength === 0 ? "text-muted-foreground" : 
+                        strength <= 2 ? "text-red-500" : 
+                        strength <= 3 ? "text-orange-500" : 
+                        strength <= 4 ? "text-yellow-500" : "text-emerald-500"
+                      )}>
+                        {getStrengthLabel()}
+                      </span>
+                    </div>
+                    <div className="h-2 w-full bg-secondary rounded-full flex gap-1">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div 
+                          key={i} 
+                          className={cn(
+                            "h-full flex-1 first:rounded-l-full last:rounded-r-full transition-all duration-500",
+                            i <= strength ? getStrengthColor() : "bg-zinc-200 dark:bg-zinc-800"
+                          )} 
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div className="h-2 w-full bg-secondary rounded-full flex gap-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div 
-                        key={i} 
-                        className={cn(
-                          "h-full flex-1 first:rounded-l-full last:rounded-r-full transition-all duration-500",
-                          i <= strength ? getStrengthColor() : "bg-zinc-200 dark:bg-zinc-800"
-                        )} 
-                      />
-                    ))}
-                  </div>
-                </div>
+                )}
 
                 <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex gap-3">
-                  <ShieldAlert className="text-primary shrink-0" size={18} />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Bu parola, PDF dosyasını açmak için gereklidir. Lütfen parolanızı güvenli bir yerde saklayın; unutulan parolalar kurtarılamaz.
-                  </p>
+                  {mode === 'encrypt' ? (
+                    <>
+                      <ShieldAlert className="text-primary shrink-0" size={18} />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Bu parola, PDF dosyasını açmak için gereklidir. Lütfen parolanızı güvenli bir yerde saklayın; unutulan parolalar kurtarılamaz.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Unlock className="text-primary shrink-0" size={18} />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Mevcut parola doğru girilirse, dosyanın şifresi tamamen kaldırılarak kaydedilecektir. Kilitli dosyanızın şifresinden sonsuza kadar kurtulabilirsiniz.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
 
               <button
                 disabled={isProcessing || !password}
-                onClick={protectPDF}
+                onClick={runProcess}
                 className={cn(
                   "w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg",
                   !isProcessing && password
@@ -196,12 +247,12 @@ export default function ProtectTool() {
                 {isProcessing ? (
                   <>
                     <Loader2 className="animate-spin" />
-                    Şifreleniyor...
+                    İşleniyor...
                   </>
                 ) : (
                   <>
-                    <Lock size={20} />
-                    PDF'i Şifrele ve İndir
+                    {mode === 'encrypt' ? <Lock size={20} /> : <Unlock size={20} />}
+                    {mode === 'encrypt' ? "PDF'i Şifrele ve İndir" : "Şifreyi Kaldır ve İndir"}
                   </>
                 )}
               </button>
@@ -211,9 +262,13 @@ export default function ProtectTool() {
               <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 size={48} />
               </div>
-              <h3 className="text-2xl font-bold">Dosya Başarıyla Şifrelendi!</h3>
+              <h3 className="text-2xl font-bold">
+                {mode === 'encrypt' ? 'Dosya Başarıyla Şifrelendi!' : 'Şifre Başarıyla Kaldırıldı!'}
+              </h3>
               <p className="text-muted-foreground">
-                Şifrelenmiş PDF dosyanız otomatik olarak indirildi.
+                {mode === 'encrypt' 
+                  ? 'Şifrelenmiş PDF dosyanız otomatik olarak indirildi.'
+                  : 'Şifresi kaldırılmış PDF dosyanız otomatik olarak indirildi.'}
               </p>
               <button
                 onClick={() => {
@@ -223,7 +278,7 @@ export default function ProtectTool() {
                 }}
                 className="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-all"
               >
-                Yeni Dosya Şifrele
+                {mode === 'encrypt' ? 'Yeni Dosya Şifrele' : 'Yeni Dosya Çöz'}
               </button>
             </div>
           )}
