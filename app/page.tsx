@@ -15,6 +15,7 @@ const ImageToPdfTool = dynamic(() => import('../components/tools/ImageToPdfTool'
 const ProtectTool = dynamic(() => import('../components/tools/ProtectTool'), { ssr: false });
 const PdfToImgTool = dynamic(() => import('../components/tools/PdfToImgTool'), { ssr: false });
 const ReorderTool = dynamic(() => import('../components/tools/ReorderPagesTool'), { ssr: false });
+const AddPageNumbersTool = dynamic(() => import('../components/tools/AddPageNumbersTool'), { ssr: false });
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -46,6 +47,7 @@ export default function Home() {
               {activeTool === 'protect' && <ProtectTool />}
               {activeTool === 'pdf-to-img' && <PdfToImgTool />}
               {activeTool === 'reorder' && <ReorderTool />}
+              {activeTool === 'page-numbers' && <AddPageNumbersTool />}
             </motion.div>
           </AnimatePresence>
         </div>

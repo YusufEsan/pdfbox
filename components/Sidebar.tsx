@@ -15,7 +15,8 @@ import {
   Lock,
   ArrowRightLeft,
   Menu,
-  X
+  X,
+  Hash
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
@@ -93,6 +94,14 @@ const tools = [
     icon: ArrowRightLeft,
     color: 'text-blue-500',
     bg: 'bg-blue-500/10',
+  },
+  {
+    id: 'page-numbers',
+    name: 'Sayfa Numarası',
+    description: 'PDF sayfalarının kenarlarına numara ekleyin.',
+    icon: Hash,
+    color: 'text-teal-500',
+    bg: 'bg-teal-500/10',
   },
 ];
 
