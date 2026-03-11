@@ -24,10 +24,10 @@ export default function Home() {
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
       <Sidebar activeTool={activeTool} setActiveTool={setActiveTool} />
       
-      <main className="flex-1 overflow-y-auto relative">
+      <main className="flex-1 overflow-y-auto relative pt-14 lg:pt-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
         
-        <div className="max-w-5xl mx-auto px-8 py-12 relative z-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTool}

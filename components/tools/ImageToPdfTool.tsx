@@ -127,7 +127,7 @@ export default function ImageToPdfTool() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Görselden PDF'e</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Görselden PDF'e</h2>
         <p className="text-muted-foreground mt-2">
           JPG veya PNG görsellerini tek tek veya birleştirerek PDF formatına dönüştürün.
         </p>

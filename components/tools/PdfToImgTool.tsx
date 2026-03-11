@@ -161,7 +161,7 @@ export default function PdfToImgTool() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">PDF&apos;den Görsele</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">PDF&apos;den Görsele</h2>
         <p className="text-muted-foreground mt-2">
           PDF sayfalarınızı yüksek kaliteli PNG formatına dönüştürün.
         </p>
@@ -178,14 +178,22 @@ export default function PdfToImgTool() {
           {/* File Info & Global Actions */}
           <div className="p-6 rounded-3xl border border-border bg-card shadow-sm space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
                   <FileText size={24} />
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="font-bold truncate max-w-[150px] sm:max-w-xs">{file.name}</p>
                   <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
+                {!isProcessing && !isDone && (
+                  <button 
+                    onClick={() => setFile(null)}
+                    className="p-2 hover:bg-secondary rounded-full transition-colors shrink-0 sm:hidden"
+                  >
+                    <X size={20} />
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
@@ -233,14 +241,6 @@ export default function PdfToImgTool() {
                       {selectedIndices.size > 0 ? `İndir (${selectedIndices.size})` : 'Tümünü İndir'}
                     </button>
                   </>
-                )}
-                {!isProcessing && !isDone && (
-                  <button 
-                    onClick={() => setFile(null)}
-                    className="p-2 hover:bg-secondary rounded-full transition-colors ml-auto sm:ml-0"
-                  >
-                    <X size={20} />
-                  </button>
                 )}
               </div>
             </div>

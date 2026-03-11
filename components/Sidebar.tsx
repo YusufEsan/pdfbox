@@ -13,10 +13,13 @@ import {
   Scissors,
   ImageIcon,
   Lock,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Menu,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const tools = [
   {
@@ -102,14 +105,33 @@ export default function Sidebar({
 }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  return (
-    <div className="flex h-screen w-72 flex-col border-r border-border bg-card/50 backdrop-blur-xl">
-      <div className="flex h-16 items-center border-b border-border px-6 justify-between">
+  // Close sidebar on resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleToolSelect = (id: string) => {
+    setActiveTool(id);
+    setIsOpen(false); // Close mobile menu on selection
+  };
+
+  const activeToolData = tools.find(t => t.id === activeTool);
+
+  const sidebarContent = (
+    <>
+      <div className="flex h-16 items-center border-b border-border px-6 justify-between shrink-0">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Settings2 size={20} />
@@ -117,22 +139,31 @@ export default function Sidebar({
           <span className="text-xl font-bold tracking-tight">PDF Araçları</span>
         </div>
         
-        {mounted && (
+        <div className="flex items-center gap-1">
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-lg hover:bg-secondary transition-colors"
+              title="Temayı Değiştir"
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          )}
+          {/* Close button for mobile */}
           <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-lg hover:bg-secondary transition-colors"
-            title="Temayı Değiştir"
+            onClick={() => setIsOpen(false)}
+            className="p-2 rounded-lg hover:bg-secondary transition-colors lg:hidden"
           >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            <X size={20} />
           </button>
-        )}
+        </div>
       </div>
 
-      <nav className="flex-1 space-y-2 p-4 overflow-y-auto">
+      <nav className="flex-1 space-y-1.5 p-4 overflow-y-auto">
         {tools.map((tool) => (
           <button
             key={tool.id}
-            onClick={() => setActiveTool(tool.id)}
+            onClick={() => handleToolSelect(tool.id)}
             className={cn(
               "group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 outline-none text-left",
               activeTool === tool.id 
@@ -152,7 +183,7 @@ export default function Sidebar({
         ))}
       </nav>
 
-      <div className="p-4 mt-auto border-t border-border">
+      <div className="p-4 mt-auto border-t border-border shrink-0">
         <div className="rounded-2xl bg-secondary/50 p-4">
           <p className="text-xs font-medium text-muted-foreground mb-2">Açık Kaynak</p>
           <a 
@@ -166,6 +197,67 @@ export default function Sidebar({
           </a>
         </div>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-card/80 backdrop-blur-xl border-b border-border flex items-center justify-between px-4">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="p-2 rounded-xl hover:bg-secondary transition-colors"
+        >
+          <Menu size={22} />
+        </button>
+
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Settings2 size={16} />
+          </div>
+          <span className="text-base font-bold tracking-tight">PDF Araçları</span>
+        </div>
+
+        <div className="flex items-center gap-1">
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-xl hover:bg-secondary transition-colors"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            />
+            <motion.div 
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="lg:hidden fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] z-50 bg-card/95 backdrop-blur-xl border-r border-border flex flex-col shadow-2xl"
+            >
+              {sidebarContent}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex h-screen w-72 flex-col border-r border-border bg-card/50 backdrop-blur-xl shrink-0">
+        {sidebarContent}
+      </div>
+    </>
   );
 }

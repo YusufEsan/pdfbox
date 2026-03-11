@@ -92,7 +92,7 @@ export default function WatermarkTool() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Filigran Ekle</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Filigran Ekle</h2>
         <p className="text-muted-foreground mt-2">
           PDF sayfalarınıza yarı saydam metin tabanlı bir filigran ekleyin.
         </p>
@@ -102,7 +102,7 @@ export default function WatermarkTool() {
         <FileUpload onFilesSelected={handleFileSelected} multiple={false} label="Filigran eklenecek PDF dosyasını seçin" />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
+          <div className="space-y-6 order-2 lg:order-1">
             <div className="p-6 rounded-3xl border border-border bg-card flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
                 <FileText size={24} />
@@ -202,7 +202,7 @@ export default function WatermarkTool() {
             </button>
           </div>
 
-          <div className="hidden lg:flex items-center justify-center bg-secondary/50 rounded-3xl border border-dashed border-border p-8 min-h-[400px]">
+          <div className="flex items-center justify-center bg-secondary/50 rounded-3xl border border-dashed border-border p-8 min-h-[250px] lg:min-h-[400px] order-1 lg:order-2">
              <div className="text-center space-y-4">
                 <div className="relative w-48 h-64 bg-white shadow-2xl rounded-sm mx-auto flex items-center justify-center overflow-hidden border border-border">
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[var(--op)]" style={{ '--op': opacity } as any}>

@@ -138,7 +138,7 @@ export default function ReorderPagesTool() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4">
-        <h1 className="text-3xl font-extrabold tracking-tight">Sayfa Sıralama</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sayfa Sıralama</h1>
         <p className="text-muted-foreground">
           PDF sayfalarınızı sürükleyip bırakarak istediğiniz sıraya koyun.
         </p>
@@ -220,7 +220,7 @@ export default function ReorderPagesTool() {
                       zIndex: 50
                     }}
                     className={cn(
-                      "relative cursor-grab active:cursor-grabbing bg-card hover:bg-secondary/30 border border-border p-4 rounded-2xl flex items-center gap-6 group transition-shadow duration-200",
+                      "relative cursor-grab active:cursor-grabbing bg-card hover:bg-secondary/30 border border-border p-3 sm:p-4 rounded-2xl flex items-center gap-3 sm:gap-6 group transition-shadow duration-200",
                       page.index !== index + 1 && "border-l-4 border-l-orange-500 shadow-md ring-1 ring-orange-500/20"
                     )}
                   >
@@ -229,14 +229,14 @@ export default function ReorderPagesTool() {
                         DEĞİŞTİRİLDİ
                       </div>
                     )}
-                    <div className="flex items-center gap-4 min-w-[60px] justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                      <span className="text-xl font-black italic opacity-20 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-[40px] sm:min-w-[60px] justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                      <span className="text-lg sm:text-xl font-black italic opacity-20 group-hover:opacity-100 transition-opacity">
                         {index + 1}
                       </span>
-                      <GripVertical size={20} className="shrink-0" />
+                      <GripVertical size={18} className="shrink-0 hidden sm:block" />
                     </div>
 
-                    <div className="h-24 w-16 bg-muted rounded-lg overflow-hidden border border-border/50 shrink-0 shadow-sm transition-transform group-hover:scale-105">
+                    <div className="h-16 w-12 sm:h-24 sm:w-16 bg-muted rounded-lg overflow-hidden border border-border/50 shrink-0 shadow-sm transition-transform group-hover:scale-105">
                       <img 
                         src={page.thumbnail} 
                         alt={`Sayfa ${page.index}`} 
@@ -245,8 +245,8 @@ export default function ReorderPagesTool() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-lg">Orijinal Sayfa {page.index}</h3>
-                      <p className="text-sm text-muted-foreground">PDF içindeki orijinal konumu: {page.index}</p>
+                      <h3 className="font-bold text-sm sm:text-lg">Orijinal Sayfa {page.index}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">PDF içindeki orijinal konumu: {page.index}</p>
                     </div>
 
                     <div className="flex items-center gap-2">

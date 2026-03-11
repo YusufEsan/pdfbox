@@ -64,7 +64,7 @@ export default function FileUpload({
       onDrop={handleDrop}
       onClick={() => fileInputRef.current?.click()}
       className={cn(
-        "relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-3xl transition-all duration-300 cursor-pointer group overflow-hidden",
+        "relative flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed rounded-3xl transition-all duration-300 cursor-pointer group overflow-hidden",
         isDragging 
           ? "border-primary bg-primary/5 scale-[0.99]" 
           : "border-border hover:border-primary/50 hover:bg-secondary/30"

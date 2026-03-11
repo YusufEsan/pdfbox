@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
 import FileUpload from '../FileUpload';
-import { FileText, X, GripVertical, Loader2, Download, Trash2 } from 'lucide-react';
+import { FileText, X, GripVertical, Loader2, Download, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, Reorder } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,15 @@ export default function MergeTool() {
 
   const removeFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const moveFile = (currentIndex: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= files.length) return;
+    const newFiles = [...files];
+    const [movedItem] = newFiles.splice(currentIndex, 1);
+    newFiles.splice(newIndex, 0, movedItem);
+    setFiles(newFiles);
   };
 
   const mergePDFs = async () => {
@@ -55,7 +64,7 @@ export default function MergeTool() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">PDF Birleştir</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">PDF Birleştir</h2>
         <p className="text-muted-foreground mt-2">
           Birden fazla PDF dosyasını seçin ve dilediğiniz sırayla tek bir dosyada birleştirin.
         </p>
@@ -66,7 +75,7 @@ export default function MergeTool() {
       {files.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Dosya Listesi ({files.length})</h3>
+            <h3 className="text-base sm:text-lg font-semibold">Dosya Listesi ({files.length})</h3>
             <button 
               onClick={() => setFiles([])}
               className="text-sm text-destructive hover:underline flex items-center gap-1"
@@ -86,23 +95,50 @@ export default function MergeTool() {
                 key={`${file.name}-${index}`}
                 value={file}
                 className={cn(
-                  "flex items-center gap-4 p-4 rounded-2xl border border-border bg-card transition-all group",
+                  "flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-2xl border border-border bg-card transition-all group",
                   "hover:shadow-md hover:border-primary/50"
                 )}
               >
-                <GripVertical className="text-muted-foreground cursor-grab active:cursor-grabbing" size={20} />
-                <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                  <FileText size={20} />
+                <GripVertical className="text-muted-foreground cursor-grab active:cursor-grabbing shrink-0 hidden sm:block" size={20} />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+                  <FileText size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{file.name}</p>
+                  <p className="font-medium truncate text-sm sm:text-base">{file.name}</p>
                   <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
+
+                {/* Arrow buttons */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    disabled={index === 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moveFile(index, 'up');
+                    }}
+                    className="p-1.5 bg-secondary hover:bg-primary hover:text-primary-foreground rounded-lg disabled:opacity-30 transition-all border border-border/50"
+                    title="Yukarı Taşı"
+                  >
+                    <ChevronUp size={16} />
+                  </button>
+                  <button
+                    disabled={index === files.length - 1}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moveFile(index, 'down');
+                    }}
+                    className="p-1.5 bg-secondary hover:bg-primary hover:text-primary-foreground rounded-lg disabled:opacity-30 transition-all border border-border/50"
+                    title="Aşağı Taşı"
+                  >
+                    <ChevronDown size={16} />
+                  </button>
+                </div>
+
                 <button
                   onClick={() => removeFile(index)}
-                  className="p-2 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-1.5 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
               </Reorder.Item>
             ))}
@@ -113,7 +149,7 @@ export default function MergeTool() {
               disabled={files.length < 2 || isProcessing}
               onClick={mergePDFs}
               className={cn(
-                "w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all",
+                "w-full h-12 sm:h-14 rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-2 transition-all",
                 files.length >= 2 
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]" 
                   : "bg-muted text-muted-foreground cursor-not-allowed"

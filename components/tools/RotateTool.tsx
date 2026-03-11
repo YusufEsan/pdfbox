@@ -105,7 +105,7 @@ export default function RotateTool() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">PDF Döndür</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">PDF Döndür</h2>
         <p className="text-muted-foreground mt-2">
           PDF sayfalarınızı 90, 180 veya 270 derece döndürün.
         </p>
@@ -157,9 +157,9 @@ export default function RotateTool() {
             </div>
 
             {rotationMode === 'all' ? (
-              <div className="p-8 rounded-3xl border border-border bg-card max-w-2xl mx-auto">
+              <div className="p-4 sm:p-8 rounded-3xl border border-border bg-card max-w-2xl mx-auto">
                 <label className="text-sm font-bold block mb-6 text-center text-muted-foreground">Tüm sayfalar için dönüş yönü seçin</label>
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {[0, 90, 180, 270].map((angle) => (
                     <button
                       key={angle}
