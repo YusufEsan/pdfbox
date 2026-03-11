@@ -197,15 +197,18 @@ export default function RotateTool() {
                 {individualRotations.map((angle, idx) => (
                   <div key={idx} className="relative group p-4 rounded-2xl border border-border bg-card hover:border-primary/50 transition-all">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="relative w-24 h-32 bg-secondary/30 rounded-lg shadow-md flex items-center justify-center overflow-hidden border border-border/50">
-                        {/* Blurred Background - Centered and Oversized */}
+                      <div 
+                        className="relative w-24 h-32 bg-secondary/30 rounded-lg shadow-md flex items-center justify-center overflow-hidden border border-border/50 transition-transform duration-500"
+                        style={{ transform: `rotate(${angle}deg)` }}
+                      >
+                        {/* Blurred Background */}
                         {previews[idx] && (
                           <div className="absolute inset-[-100%] z-0 pointer-events-none">
                             <img 
                               src={previews[idx]} 
                               alt="" 
-                              className="w-full h-full object-cover blur-3xl opacity-30 transition-transform duration-500"
-                              style={{ transform: `rotate(${angle}deg) scale(1.5)` }}
+                              className="w-full h-full object-cover blur-3xl opacity-30"
+                              style={{ transform: 'scale(1.5)' }}
                             />
                           </div>
                         )}
@@ -213,13 +216,11 @@ export default function RotateTool() {
                           <img 
                             src={previews[idx]} 
                             alt={`page ${idx + 1}`} 
-                            className="relative z-10 w-full h-full object-contain transition-transform duration-300 drop-shadow-2xl"
-                            style={{ transform: `rotate(${angle}deg)` }}
+                            className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
                           />
                         ) : (
                           <FileText 
-                            className="relative z-10 text-zinc-400 dark:text-zinc-500 transition-transform duration-300" 
-                            style={{ transform: `rotate(${angle}deg)` }}
+                            className="relative z-10 text-zinc-400 dark:text-zinc-500" 
                             size={32} 
                           />
                         )}
