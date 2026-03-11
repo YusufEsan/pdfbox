@@ -174,24 +174,29 @@ export default function RotateTool() {
                           : "border-border hover:border-primary/30 hover:bg-secondary"
                       )}
                     >
-                      <div 
-                        className="relative w-16 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-sm shadow-sm flex items-center justify-center overflow-hidden"
-                        style={{ aspectRatio: previews[0]?.aspectRatio || (3/4) }}
-                      >
-                        {previews[0] ? (
-                          <img 
-                            src={previews[0].url} 
-                            alt="page preview" 
-                            className="w-full h-full object-contain transition-transform duration-300"
-                            style={{ transform: `rotate(${angle}deg)` }}
-                          />
-                        ) : (
-                          <FileText 
-                            className="text-zinc-400 dark:text-zinc-500 transition-transform duration-300" 
-                            style={{ transform: `rotate(${angle}deg)` }}
-                            size={24} 
-                          />
-                        )}
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div 
+                          className="relative bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-sm shadow-sm flex flex-col items-center justify-center overflow-hidden transition-transform duration-300"
+                          style={{ 
+                            transform: `rotate(${angle}deg)`, 
+                            aspectRatio: previews[0]?.aspectRatio || (3/4),
+                            width: (previews[0]?.aspectRatio || (3/4)) > 1 ? '100%' : 'auto',
+                            height: (previews[0]?.aspectRatio || (3/4)) > 1 ? 'auto' : '100%'
+                          }}
+                        >
+                          {previews[0] ? (
+                            <img 
+                              src={previews[0].url} 
+                              alt="page preview" 
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <FileText 
+                              className="text-zinc-400 dark:text-zinc-500" 
+                              size={24} 
+                            />
+                          )}
+                        </div>
                       </div>
                       <span className="font-bold">{angle}°</span>
                     </button>
@@ -203,33 +208,40 @@ export default function RotateTool() {
                 {individualRotations.map((angle, idx) => (
                   <div key={idx} className="relative group p-4 rounded-2xl border border-border bg-card hover:border-primary/50 transition-all">
                     <div className="flex flex-col items-center gap-3">
-                      <div 
-                        className="relative w-24 bg-secondary/30 rounded-lg shadow-md flex items-center justify-center overflow-hidden border border-border/50 transition-transform duration-500"
-                        style={{ transform: `rotate(${angle}deg)`, aspectRatio: previews[idx]?.aspectRatio || (3/4) }}
-                      >
-                        {/* Blurred Background */}
-                        {previews[idx] && (
-                          <div className="absolute inset-[-100%] z-0 pointer-events-none">
+                      <div className="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center">
+                        <div 
+                          className="relative bg-secondary/30 rounded-lg shadow-md flex items-center justify-center overflow-hidden border border-border/50 transition-transform duration-500"
+                          style={{ 
+                            transform: `rotate(${angle}deg)`, 
+                            aspectRatio: previews[idx]?.aspectRatio || (3/4),
+                            width: (previews[idx]?.aspectRatio || (3/4)) > 1 ? '100%' : 'auto',
+                            height: (previews[idx]?.aspectRatio || (3/4)) > 1 ? 'auto' : '100%'
+                          }}
+                        >
+                          {/* Blurred Background */}
+                          {previews[idx] && (
+                            <div className="absolute inset-[-100%] z-0 pointer-events-none">
+                              <img 
+                                src={previews[idx].url} 
+                                alt="" 
+                                className="w-full h-full object-cover blur-3xl opacity-30"
+                                style={{ transform: 'scale(1.5)' }}
+                              />
+                            </div>
+                          )}
+                          {previews[idx] ? (
                             <img 
                               src={previews[idx].url} 
-                              alt="" 
-                              className="w-full h-full object-cover blur-3xl opacity-30"
-                              style={{ transform: 'scale(1.5)' }}
+                              alt={`page ${idx + 1}`} 
+                              className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
                             />
-                          </div>
-                        )}
-                        {previews[idx] ? (
-                          <img 
-                            src={previews[idx].url} 
-                            alt={`page ${idx + 1}`} 
-                            className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
-                          />
-                        ) : (
-                          <FileText 
-                            className="relative z-10 text-zinc-400 dark:text-zinc-500" 
-                            size={32} 
-                          />
-                        )}
+                          ) : (
+                            <FileText 
+                              className="relative z-10 text-zinc-400 dark:text-zinc-500" 
+                              size={32} 
+                            />
+                          )}
+                        </div>
                       </div>
                       <span className="text-xs font-bold text-muted-foreground">Sayfa {idx + 1}</span>
                       <span className="text-xs font-bold text-primary mb-1">{((angle % 360) + 360) % 360}°</span>
