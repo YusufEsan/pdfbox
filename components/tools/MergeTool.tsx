@@ -4,19 +4,30 @@ import React, { useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
 import FileUpload from '../FileUpload';
 import { FileText, X, GripVertical, Loader2, Download, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
-import { motion, Reorder } from 'framer-motion';
+import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
+// Her dosya için benzersiz bir id oluşturarak framer-motion sürükle-bırak animasyonlarının
+// index bağımsız, tamamen akıcı çalışmasını sağlıyoruz.
+interface FileItem {
+  id: string;
+  file: File;
+}
+
 export default function MergeTool() {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFilesSelected = (newFiles: File[]) => {
-    setFiles((prev) => [...prev, ...newFiles]);
+    const newItems = newFiles.map(file => ({
+      id: crypto.randomUUID(),
+      file
+    }));
+    setFiles((prev) => [...prev, ...newItems]);
   };
 
-  const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+  const removeFile = (idToRemove: string) => {
+    setFiles((prev) => prev.filter((item) => item.id !== idToRemove));
   };
 
   const moveFile = (currentIndex: number, direction: 'up' | 'down') => {
@@ -35,8 +46,8 @@ export default function MergeTool() {
     try {
       const mergedPdf = await PDFDocument.create();
       
-      for (const file of files) {
-        const arrayBuffer = await file.arrayBuffer();
+      for (const item of files) {
+        const arrayBuffer = await item.file.arrayBuffer();
         const pdf = await PDFDocument.load(arrayBuffer);
         const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
         copiedPages.forEach((page) => mergedPdf.addPage(page));
@@ -88,60 +99,71 @@ export default function MergeTool() {
             axis="y" 
             values={files} 
             onReorder={setFiles}
-            className="space-y-2"
+            className="space-y-4"
           >
-            {files.map((file, index) => (
-              <Reorder.Item
-                key={`${file.name}-${index}`}
-                value={file}
-                className={cn(
-                  "flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-2xl border border-border bg-card transition-all group",
-                  "hover:shadow-md hover:border-primary/50"
-                )}
-              >
-                <GripVertical className="text-muted-foreground cursor-grab active:cursor-grabbing shrink-0 hidden sm:block" size={20} />
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
-                  <FileText size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate text-sm sm:text-base">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                </div>
-
-                {/* Arrow buttons */}
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    disabled={index === 0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      moveFile(index, 'up');
-                    }}
-                    className="p-1.5 bg-secondary hover:bg-primary hover:text-primary-foreground rounded-lg disabled:opacity-30 transition-all border border-border/50"
-                    title="Yukarı Taşı"
-                  >
-                    <ChevronUp size={16} />
-                  </button>
-                  <button
-                    disabled={index === files.length - 1}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      moveFile(index, 'down');
-                    }}
-                    className="p-1.5 bg-secondary hover:bg-primary hover:text-primary-foreground rounded-lg disabled:opacity-30 transition-all border border-border/50"
-                    title="Aşağı Taşı"
-                  >
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => removeFile(index)}
-                  className="p-1.5 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
+            <AnimatePresence initial={false}>
+              {files.map((item, index) => (
+                <Reorder.Item
+                  key={item.id}
+                  value={item}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  whileDrag={{ 
+                    scale: 1.01, 
+                    boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+                    zIndex: 50
+                  }}
+                  className={cn(
+                    "relative cursor-grab active:cursor-grabbing bg-card hover:bg-secondary/30 transition-shadow duration-200",
+                    "flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-2xl border border-border group"
+                  )}
                 >
-                  <X size={16} />
-                </button>
-              </Reorder.Item>
-            ))}
+                  <GripVertical className="text-muted-foreground shrink-0 hidden sm:block opacity-50 group-hover:opacity-100 transition-opacity" size={20} />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+                    <FileText size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate text-sm sm:text-base">{item.file.name}</p>
+                    <p className="text-xs text-muted-foreground">{(item.file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
+
+                  {/* Arrow buttons */}
+                  <div className="flex items-center gap-1 shrink-0 z-10 cursor-default">
+                    <button
+                      disabled={index === 0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        moveFile(index, 'up');
+                      }}
+                      className="p-1.5 bg-secondary hover:bg-primary hover:text-primary-foreground rounded-lg disabled:opacity-30 transition-all border border-border/50"
+                      title="Yukarı Taşı"
+                    >
+                      <ChevronUp size={16} />
+                    </button>
+                    <button
+                      disabled={index === files.length - 1}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        moveFile(index, 'down');
+                      }}
+                      className="p-1.5 bg-secondary hover:bg-primary hover:text-primary-foreground rounded-lg disabled:opacity-30 transition-all border border-border/50"
+                      title="Aşağı Taşı"
+                    >
+                      <ChevronDown size={16} />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => removeFile(item.id)}
+                    className="p-1.5 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0 z-10 cursor-default"
+                  >
+                    <X size={16} />
+                  </button>
+                </Reorder.Item>
+              ))}
+            </AnimatePresence>
           </Reorder.Group>
 
           <div className="pt-6">
