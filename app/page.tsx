@@ -11,6 +11,7 @@ const WatermarkTool = dynamic(() => import('../components/tools/WatermarkTool'),
 const RotateTool = dynamic(() => import('../components/tools/RotateTool'), { ssr: false });
 const SplitTool = dynamic(() => import('../components/tools/SplitTool'), { ssr: false });
 const ImageToPdfTool = dynamic(() => import('../components/tools/ImageToPdfTool'), { ssr: false });
+const ProtectTool = dynamic(() => import('../components/tools/ProtectTool'), { ssr: false });
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
@@ -38,6 +39,7 @@ export default function Home() {
               {activeTool === 'rotate' && <RotateTool />}
               {activeTool === 'split' && <SplitTool />}
               {activeTool === 'image-to-pdf' && <ImageToPdfTool />}
+              {activeTool === 'protect' && <ProtectTool />}
             </motion.div>
           </AnimatePresence>
         </div>

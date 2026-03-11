@@ -11,7 +11,8 @@ import {
   Sun,
   RotateCw,
   Scissors,
-  Image
+  Image,
+  Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
@@ -64,6 +65,14 @@ const tools = [
     icon: Image,
     color: 'text-pink-500',
     bg: 'bg-pink-500/10',
+  },
+  {
+    id: 'protect',
+    name: 'PDF Şifreleme',
+    description: 'PDF dosyalarınıza parola koyarak güvenliğini sağlayın.',
+    icon: Lock,
+    color: 'text-indigo-500',
+    bg: 'bg-indigo-500/10',
   },
 ];
 
