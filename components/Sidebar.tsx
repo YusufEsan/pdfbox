@@ -16,7 +16,8 @@ import {
   ArrowRightLeft,
   Menu,
   X,
-  Hash
+  Hash,
+  Tags
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
@@ -102,6 +103,14 @@ const tools = [
     icon: Hash,
     color: 'text-teal-500',
     bg: 'bg-teal-500/10',
+  },
+  {
+    id: 'metadata',
+    name: 'Metadata Düzenle',
+    description: 'PDF detaylarını (Başlık, yazar, konu vb.) düzenleyin.',
+    icon: Tags,
+    color: 'text-rose-500',
+    bg: 'bg-rose-500/10',
   },
 ];
 
