@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 // Tools
 import Sidebar from '../components/Sidebar';
-import MergeTool from '../components/tools/MergeTool';
-import DeleteTool from '../components/tools/DeleteTool';
-import WatermarkTool from '../components/tools/WatermarkTool';
-import RotateTool from '../components/tools/RotateTool';
-import SplitTool from '../components/tools/SplitTool';
-import ImageToPdfTool from '../components/tools/ImageToPdfTool';
+import dynamic from 'next/dynamic';
+
+const MergeTool = dynamic(() => import('../components/tools/MergeTool'), { ssr: false });
+const DeleteTool = dynamic(() => import('../components/tools/DeleteTool'), { ssr: false });
+const WatermarkTool = dynamic(() => import('../components/tools/WatermarkTool'), { ssr: false });
+const RotateTool = dynamic(() => import('../components/tools/RotateTool'), { ssr: false });
+const SplitTool = dynamic(() => import('../components/tools/SplitTool'), { ssr: false });
+const ImageToPdfTool = dynamic(() => import('../components/tools/ImageToPdfTool'), { ssr: false });
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
