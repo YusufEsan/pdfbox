@@ -226,44 +226,43 @@ export default function RotateTool() {
                         )}
                       </div>
                       <span className="text-xs font-bold text-muted-foreground">Sayfa {idx + 1}</span>
-                      <span className="text-xs font-bold text-primary">{angle}°</span>
-                    </div>
-                    
-                    {/* Floating Controls - 3 Buttons */}
-                    <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <button
-                        onClick={() => {
-                          const newRots = [...individualRotations];
-                          newRots[idx] = (newRots[idx] + 90) % 360;
-                          setIndividualRotations(newRots);
-                        }}
-                        className="p-1.5 rounded-lg bg-primary text-primary-foreground shadow-lg hover:scale-110 active:scale-95 transition-all"
-                        title="Saat Yönünde Döndür (+90)"
-                      >
-                        <RotateCw size={14} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          const newRots = [...individualRotations];
-                          newRots[idx] = (newRots[idx] - 90 + 360) % 360;
-                          setIndividualRotations(newRots);
-                        }}
-                        className="p-1.5 rounded-lg bg-orange-500 text-white shadow-lg hover:scale-110 active:scale-95 transition-all"
-                        title="Saat Yönü Tersi Döndür (-90)"
-                      >
-                        <RotateCcw size={14} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          const newRots = [...individualRotations];
-                          newRots[idx] = 0;
-                          setIndividualRotations(newRots);
-                        }}
-                        className="p-1.5 rounded-lg bg-secondary text-foreground shadow-sm hover:bg-destructive hover:text-white transition-all border border-border"
-                        title="Sıfırla"
-                      >
-                        <RotateCcw size={14} />
-                      </button>
+                      <span className="text-xs font-bold text-primary mb-1">{angle}°</span>
+                      
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={() => {
+                            const newRots = [...individualRotations];
+                            newRots[idx] = (newRots[idx] + 90) % 360;
+                            setIndividualRotations(newRots);
+                          }}
+                          className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
+                          title="Saat Yönünde Döndür (+90)"
+                        >
+                          <RotateCw size={15} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const newRots = [...individualRotations];
+                            newRots[idx] = (newRots[idx] - 90 + 360) % 360;
+                            setIndividualRotations(newRots);
+                          }}
+                          className="p-2 rounded-xl bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white transition-all shadow-sm"
+                          title="Saat Yönü Tersi Döndür (-90)"
+                        >
+                          <RotateCcw size={15} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const newRots = [...individualRotations];
+                            newRots[idx] = 0;
+                            setIndividualRotations(newRots);
+                          }}
+                          className="p-2 rounded-xl bg-secondary text-muted-foreground hover:bg-destructive hover:text-white transition-all shadow-sm"
+                          title="Sıfırla"
+                        >
+                          <RotateCcw size={15} className="rotate-180" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
