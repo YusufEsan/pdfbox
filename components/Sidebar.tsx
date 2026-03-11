@@ -156,7 +156,7 @@ export default function Sidebar({
         <div className="rounded-2xl bg-secondary/50 p-4">
           <p className="text-xs font-medium text-muted-foreground mb-2">Açık Kaynak</p>
           <a 
-            href="https://github.com" 
+            href="https://github.com/YusufEsan/pdfbox" 
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm font-semibold hover:underline"
