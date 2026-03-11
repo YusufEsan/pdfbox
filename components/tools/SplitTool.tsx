@@ -14,6 +14,7 @@ interface PageItem {
   index: number; // 1-based
   thumbnail: string;
   selected: boolean;
+  aspectRatio: number;
 }
 
 export default function SplitTool() {
@@ -72,6 +73,7 @@ export default function SplitTool() {
           index: i,
           thumbnail: canvas.toDataURL('image/jpeg', 0.7),
           selected: false,
+          aspectRatio: viewport.width / viewport.height,
         });
       }
 
@@ -190,7 +192,10 @@ export default function SplitTool() {
                         : "border-border hover:border-primary/50 hover:shadow-md"
                     )}
                   >
-                    <div className="aspect-[3/4] bg-muted">
+                    <div 
+                      className="bg-muted w-full relative flex items-center justify-center"
+                      style={{ aspectRatio: page.aspectRatio || (3/4) }}
+                    >
                       <img
                         src={page.thumbnail}
                         alt={`Sayfa ${page.index}`}
