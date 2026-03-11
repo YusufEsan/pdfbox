@@ -11,7 +11,7 @@ import {
   Sun,
   RotateCw,
   Scissors,
-  Image,
+  ImageIcon,
   Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -62,7 +62,7 @@ const tools = [
     id: 'image-to-pdf',
     name: 'Görselden PDF\'e',
     description: 'Fotoğrafları PDF formatına dönüştürün.',
-    icon: Image,
+    icon: ImageIcon,
     color: 'text-pink-500',
     bg: 'bg-pink-500/10',
   },
@@ -73,6 +73,14 @@ const tools = [
     icon: Lock,
     color: 'text-indigo-500',
     bg: 'bg-indigo-500/10',
+  },
+  {
+    id: 'pdf-to-img',
+    name: 'PDF\'den Görsele',
+    description: 'PDF sayfalarını yüksek kaliteli görsellere dönüştürün.',
+    icon: ImageIcon,
+    color: 'text-amber-500',
+    bg: 'bg-amber-500/10',
   },
 ];
 

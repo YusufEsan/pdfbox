@@ -12,6 +12,7 @@ const RotateTool = dynamic(() => import('../components/tools/RotateTool'), { ssr
 const SplitTool = dynamic(() => import('../components/tools/SplitTool'), { ssr: false });
 const ImageToPdfTool = dynamic(() => import('../components/tools/ImageToPdfTool'), { ssr: false });
 const ProtectTool = dynamic(() => import('../components/tools/ProtectTool'), { ssr: false });
+const PdfToImgTool = dynamic(() => import('../components/tools/PdfToImgTool'), { ssr: false });
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
@@ -40,6 +41,7 @@ export default function Home() {
               {activeTool === 'split' && <SplitTool />}
               {activeTool === 'image-to-pdf' && <ImageToPdfTool />}
               {activeTool === 'protect' && <ProtectTool />}
+              {activeTool === 'pdf-to-img' && <PdfToImgTool />}
             </motion.div>
           </AnimatePresence>
         </div>

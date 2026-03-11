@@ -12,6 +12,7 @@
     "@pdfsmaller/pdf-encrypt-lite": "^1.0.2",
     "clsx": "^2.1.1",
     "framer-motion": "^12.35.2",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "pdf-lib": "^1.17.1",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/jszip": "^3.4.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
