@@ -226,13 +226,13 @@ export default function RotateTool() {
                         )}
                       </div>
                       <span className="text-xs font-bold text-muted-foreground">Sayfa {idx + 1}</span>
-                      <span className="text-xs font-bold text-primary mb-1">{angle}°</span>
+                      <span className="text-xs font-bold text-primary mb-1">{((angle % 360) + 360) % 360}°</span>
                       
                       <div className="flex gap-2 mt-2">
                         <button
                           onClick={() => {
                             const newRots = [...individualRotations];
-                            newRots[idx] = (newRots[idx] + 90) % 360;
+                            newRots[idx] = newRots[idx] + 90;
                             setIndividualRotations(newRots);
                           }}
                           className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
@@ -243,7 +243,7 @@ export default function RotateTool() {
                         <button
                           onClick={() => {
                             const newRots = [...individualRotations];
-                            newRots[idx] = (newRots[idx] - 90 + 360) % 360;
+                            newRots[idx] = newRots[idx] - 90;
                             setIndividualRotations(newRots);
                           }}
                           className="p-2 rounded-xl bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white transition-all shadow-sm"
