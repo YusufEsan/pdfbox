@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   Hash,
-  Tags
+  Tags,
+  PackageOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
@@ -111,6 +112,14 @@ const tools = [
     icon: Tags,
     color: 'text-rose-500',
     bg: 'bg-rose-500/10',
+  },
+  {
+    id: 'extract-images',
+    name: 'Görselleri Ayıkla',
+    description: 'PDF içindeki gömülü görselleri tek tıkla cihazınıza indirin.',
+    icon: PackageOpen,
+    color: 'text-orange-500',
+    bg: 'bg-orange-500/10',
   },
 ];
 
