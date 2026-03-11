@@ -12,7 +12,8 @@ import {
   RotateCw,
   Scissors,
   ImageIcon,
-  Lock
+  Lock,
+  ArrowRightLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
@@ -81,6 +82,14 @@ const tools = [
     icon: ImageIcon,
     color: 'text-amber-500',
     bg: 'bg-amber-500/10',
+  },
+  {
+    id: 'reorder',
+    name: 'Sayfa Sıralama',
+    description: 'PDF sayfalarının sırasını sürükle-bırak ile değiştirin.',
+    icon: ArrowRightLeft,
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/10',
   },
 ];
 
