@@ -1,0 +1,45 @@
+'use client';
+
+import React, { useState } from 'react';
+// Tools
+import Sidebar from '../components/Sidebar';
+import MergeTool from '../components/tools/MergeTool';
+import DeleteTool from '../components/tools/DeleteTool';
+import WatermarkTool from '../components/tools/WatermarkTool';
+import RotateTool from '../components/tools/RotateTool';
+import SplitTool from '../components/tools/SplitTool';
+import ImageToPdfTool from '../components/tools/ImageToPdfTool';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export default function Home() {
+  const [activeTool, setActiveTool] = useState('merge');
+
+  return (
+    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+      <Sidebar activeTool={activeTool} setActiveTool={setActiveTool} />
+      
+      <main className="flex-1 overflow-y-auto relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+        
+        <div className="max-w-5xl mx-auto px-8 py-12 relative z-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTool}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeTool === 'merge' && <MergeTool />}
+              {activeTool === 'delete' && <DeleteTool />}
+              {activeTool === 'watermark' && <WatermarkTool />}
+              {activeTool === 'rotate' && <RotateTool />}
+              {activeTool === 'split' && <SplitTool />}
+              {activeTool === 'image-to-pdf' && <ImageToPdfTool />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
+    </div>
+  );
+}
