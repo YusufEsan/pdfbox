@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 // Tools
 import Sidebar from '../components/Sidebar';
+import ScrollToTop from '../components/ScrollToTop';
 import dynamic from 'next/dynamic';
 
 const MergeTool = dynamic(() => import('../components/tools/MergeTool'), { ssr: false });
@@ -48,6 +49,7 @@ export default function Home() {
             </motion.div>
           </AnimatePresence>
         </div>
+        <ScrollToTop />
       </main>
     </div>
   );
