@@ -31,9 +31,9 @@ export default function CompressTool() {
 
   const getCompressionSettings = (lvl: CompressionLevel) => {
     switch(lvl) {
-      case 'low': return { scale: 2.0, quality: 0.8 }; // Az Sıkıştırma (Yüksek Kalite)
-      case 'medium': return { scale: 1.5, quality: 0.5 }; // Normal Sıkıştırma (Dengeli)
-      case 'high': return { scale: 1.0, quality: 0.3 }; // Yüksek Sıkıştırma (Düşük Kalite)
+      case 'low': return { scale: 1.2, quality: 0.6 }; // Az Sıkıştırma
+      case 'medium': return { scale: 0.8, quality: 0.4 }; // Normal Sıkıştırma
+      case 'high': return { scale: 0.5, quality: 0.2 }; // Yüksek Sıkıştırma
     }
   };
 
@@ -281,7 +281,7 @@ export default function CompressTool() {
                 <CheckCircle2 size={48} />
               </div>
               
-              <h3 className="text-2xl font-bold">Gerçekten Çok Küçüldü! 🎉</h3>
+              <h3 className="text-2xl font-bold">İşlem Tamamlandı! 🎉</h3>
               
               <div className="flex justify-center items-center gap-4 sm:gap-8 font-mono bg-card w-fit mx-auto p-4 rounded-2xl border border-border shadow-sm">
                 <div className="text-center">
@@ -291,14 +291,25 @@ export default function CompressTool() {
                 <div className="text-2xl text-muted-foreground">→</div>
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground font-sans">Yeni Boyut</p>
-                  <p className="text-2xl font-bold text-emerald-500">{formatBytes(newSize)}</p>
+                  <p className={cn("text-2xl font-bold", newSize > file.size ? "text-orange-500" : "text-emerald-500")}>{formatBytes(newSize)}</p>
                 </div>
               </div>
 
               {/* Boyut tasarrufu hesabi */}
-              <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                %{Math.round((1 - (newSize / file.size)) * 100)} oranında tasarruf sağlandı!
-              </p>
+              {newSize < file.size ? (
+                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  %{Math.round((1 - (newSize / file.size)) * 100)} oranında tasarruf sağlandı!
+                </p>
+              ) : (
+                <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl max-w-lg mx-auto">
+                  <p className="text-sm font-bold text-orange-600 dark:text-orange-400">
+                    Sıkıştırma sonrası boyut arttı! 
+                  </p>
+                  <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mt-1">
+                    Bu dosya halihazırda son derece iyi sıkıştırılmış veya bolca metin/vektör barındırıyor. Böyle dökümanları tarayıcıda resme dönüştürüp sıkıştırmak boyutu artırabilir. Orijinal dosyayı kullanmaya devam edebilirsiniz.
+                  </p>
+                </div>
+              )}
               
               <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center">
                  <button
