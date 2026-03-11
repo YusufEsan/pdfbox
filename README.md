@@ -89,14 +89,6 @@ npm run build
 Her `main` dalına yapılan push, **GitHub Actions** aracılığıyla otomatik olarak
 [GitHub Pages](https://yusufesan.github.io/pdfbox/)'e dağıtılır.
 
----
-
-## 📄 Lisans
-
-Bu proje [MIT](LICENSE) lisansı ile lisanslanmıştır.
-
----
-
 <p align="center">
   <sub>⭐ Beğendiyseniz yıldız vermeyi unutmayın!</sub>
 </p>
