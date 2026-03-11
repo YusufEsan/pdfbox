@@ -18,6 +18,7 @@ const ReorderTool = dynamic(() => import('../components/tools/ReorderPagesTool')
 const AddPageNumbersTool = dynamic(() => import('../components/tools/AddPageNumbersTool'), { ssr: false });
 const MetadataTool = dynamic(() => import('../components/tools/MetadataTool'), { ssr: false });
 const ExtractImagesTool = dynamic(() => import('../components/tools/ExtractImagesTool'), { ssr: false });
+const CompressTool = dynamic(() => import('../components/tools/CompressTool'), { ssr: false });
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
@@ -51,6 +52,7 @@ export default function Home() {
               {activeTool === 'page-numbers' && <AddPageNumbersTool />}
               {activeTool === 'metadata' && <MetadataTool />}
               {activeTool === 'extract-images' && <ExtractImagesTool />}
+              {activeTool === 'compress' && <CompressTool />}
             </motion.div>
           </AnimatePresence>
         </div>

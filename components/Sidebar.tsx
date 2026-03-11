@@ -18,7 +18,8 @@ import {
   X,
   Hash,
   Tags,
-  PackageOpen
+  PackageOpen,
+  FileArchive
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
@@ -120,6 +121,14 @@ const tools = [
     icon: PackageOpen,
     color: 'text-orange-500',
     bg: 'bg-orange-500/10',
+  },
+  {
+    id: 'compress',
+    name: 'PDF Sıkıştır',
+    description: 'PDF boyutunu kaliteden fazla ödün vermeden küçültün.',
+    icon: FileArchive,
+    color: 'text-indigo-500',
+    bg: 'bg-indigo-500/10',
   },
 ];
 
