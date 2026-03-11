@@ -131,8 +131,8 @@ export default function ProtectTool() {
 
           {!isSuccess ? (
             <div className="p-8 rounded-3xl border border-border bg-card space-y-6 shadow-xl relative overflow-hidden">
-               <div className="absolute -top-4 -right-4 p-4 opacity-[0.03] pointer-events-none rotate-12">
-                 <ShieldCheck size={160} />
+               <div className="absolute -top-6 -left-6 p-4 opacity-[0.03] pointer-events-none -rotate-12">
+                 <ShieldCheck size={180} />
                </div>
 
               <div className="space-y-4">
