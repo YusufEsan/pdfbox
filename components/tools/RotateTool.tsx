@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { PDFDocument, degrees } from 'pdf-lib';
 import FileUpload from '../FileUpload';
-import { FileText, Loader2, Download, RotateCw, RotateCcw, Trash2, Info, RefreshCw } from 'lucide-react';
+import { FileText, Loader2, Download, RotateCw, RotateCcw, Trash2, Info, Undo2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as pdfjs from 'pdfjs-dist';
 
@@ -198,26 +198,35 @@ export default function RotateTool() {
                   <div key={idx} className="relative group p-4 rounded-2xl border border-border bg-card hover:border-primary/50 transition-all">
                     <div className="flex flex-col items-center gap-3">
                       <div className="relative w-24 h-32 bg-secondary/30 rounded-lg shadow-md flex items-center justify-center overflow-hidden border border-border/50">
-                        {/* Blurred Background to fill gaps */}
+                        {/* Blurred Background to fill gaps - Also Rotates */}
                         {previews[idx] && (
                           <img 
                             src={previews[idx]} 
                             alt="" 
-                            className="absolute inset-0 w-full h-full object-cover blur-lg opacity-40 scale-150"
-                            style={{ transform: `rotate(${angle}deg)` }}
+                            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30"
+                            style={{ 
+                              transform: `rotate(${angle}deg) scale(2)`,
+                              transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                            }}
                           />
                         )}
                         {previews[idx] ? (
                           <img 
                             src={previews[idx]} 
                             alt={`page ${idx + 1}`} 
-                            className="relative z-10 w-full h-full object-contain transition-transform duration-300 drop-shadow-xl"
-                            style={{ transform: `rotate(${angle}deg)` }}
+                            className="relative z-10 w-full h-full object-contain drop-shadow-2xl"
+                            style={{ 
+                              transform: `rotate(${angle}deg)`,
+                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                            }}
                           />
                         ) : (
                           <FileText 
-                            className="relative z-10 text-zinc-400 dark:text-zinc-500 transition-transform duration-300" 
-                            style={{ transform: `rotate(${angle}deg)` }}
+                            className="relative z-10 text-zinc-400 dark:text-zinc-500" 
+                            style={{ 
+                              transform: `rotate(${angle}deg)`,
+                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                            }}
                             size={32} 
                           />
                         )}
@@ -234,7 +243,7 @@ export default function RotateTool() {
                           newRots[idx] = (newRots[idx] + 90) % 360;
                           setIndividualRotations(newRots);
                         }}
-                        className="p-1.5 rounded-lg bg-primary text-primary-foreground shadow-lg hover:scale-110 active:scale-95 transition-all"
+                        className="p-1.5 rounded-lg bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
                         title="Saat Yönünde Döndür (+90)"
                       >
                         <RotateCw size={14} />
@@ -245,7 +254,7 @@ export default function RotateTool() {
                           newRots[idx] = (newRots[idx] - 90 + 360) % 360;
                           setIndividualRotations(newRots);
                         }}
-                        className="p-1.5 rounded-lg bg-orange-500 text-white shadow-lg hover:scale-110 active:scale-95 transition-all"
+                        className="p-1.5 rounded-lg bg-orange-500 text-white shadow-lg hover:bg-orange-600 transition-colors"
                         title="Saat Yönü Tersi Döndür (-90)"
                       >
                         <RotateCcw size={14} />
@@ -259,7 +268,7 @@ export default function RotateTool() {
                         className="p-1.5 rounded-lg bg-secondary text-foreground shadow-sm hover:bg-destructive hover:text-white transition-all border border-border"
                         title="Sıfırla"
                       >
-                        <RefreshCw size={14} />
+                        <Undo2 size={14} />
                       </button>
                     </div>
                   </div>

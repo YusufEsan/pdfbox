@@ -16,14 +16,16 @@ export default function ImageToPdfTool() {
 
   const handleFilesSelected = async (newFiles: File[]) => {
     setIsAddingImages(true);
-    // Use a small timeout to allow UI to show loading state
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Ensure loading state is visible for at least a short period
+    const delayPromise = new Promise(resolve => setTimeout(resolve, 800));
 
     const newImages = newFiles.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       file,
       preview: URL.createObjectURL(file)
     }));
+    
+    await delayPromise;
     setImages(prev => [...prev, ...newImages]);
     setIsAddingImages(false);
   };
