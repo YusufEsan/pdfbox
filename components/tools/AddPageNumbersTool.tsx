@@ -23,6 +23,8 @@ export default function AddPageNumbersTool() {
   const [position, setPosition] = useState<Position>('bottom-center');
   const [format, setFormat] = useState<string>('{n} / {t}'); // default format
   const [fontSize, setFontSize] = useState<number>(12);
+  const [padding, setPadding] = useState<number>(40);
+  const [color, setColor] = useState<string>('#000000'); // hex format
 
   const handleFileSelected = async (files: File[]) => {
     const selectedFile = files[0];
@@ -73,26 +75,28 @@ export default function AddPageNumbersTool() {
         // Approximate width calculation (since standard font isn't embedded yet, assuming 0.5 * fontSize per char)
         const textWidth = text.length * fontSize * 0.5;
         
-        const marginX = 40;
-        const marginY = 40;
-        
         let x = 0;
         let y = 0;
 
         switch (position) {
-          case 'top-left': x = marginX; y = height - marginY; break;
-          case 'top-center': x = (width / 2) - (textWidth / 2); y = height - marginY; break;
-          case 'top-right': x = width - marginX - textWidth; y = height - marginY; break;
-          case 'bottom-left': x = marginX; y = marginY; break;
-          case 'bottom-center': x = (width / 2) - (textWidth / 2); y = marginY; break;
-          case 'bottom-right': x = width - marginX - textWidth; y = marginY; break;
+          case 'top-left': x = padding; y = height - padding; break;
+          case 'top-center': x = (width / 2) - (textWidth / 2); y = height - padding; break;
+          case 'top-right': x = width - padding - textWidth; y = height - padding; break;
+          case 'bottom-left': x = padding; y = padding; break;
+          case 'bottom-center': x = (width / 2) - (textWidth / 2); y = padding; break;
+          case 'bottom-right': x = width - padding - textWidth; y = padding; break;
         }
+
+        // Convert HEX string (#RRGGBB) to rgb() for pdf-lib
+        const r = parseInt(color.slice(1, 3), 16) / 255;
+        const g = parseInt(color.slice(3, 5), 16) / 255;
+        const b = parseInt(color.slice(5, 7), 16) / 255;
 
         page.drawText(text, {
           x,
           y,
           size: fontSize,
-          color: rgb(0.1, 0.1, 0.1), // Almost black
+          color: rgb(r, g, b),
         });
       }
 
@@ -220,6 +224,35 @@ export default function AddPageNumbersTool() {
                       className="w-full accent-primary"
                     />
                   </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 flex justify-between">
+                      <span>Kenar Boşluğu (Padding)</span>
+                      <span className="text-primary font-bold">{padding}px</span>
+                    </label>
+                    <input 
+                      type="range" 
+                      min="10" 
+                      max="150" 
+                      step="5"
+                      value={padding}
+                      onChange={(e) => setPadding(parseInt(e.target.value))}
+                      className="w-full accent-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Yazı Rengi</label>
+                    <div className="flex gap-3 items-center">
+                      <input 
+                        type="color" 
+                        value={color}
+                        onChange={(e) => setColor(e.target.value)}
+                        className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-none p-0 overflow-hidden"
+                      />
+                      <span className="text-sm border border-border px-3 py-2 rounded-lg bg-secondary/50 uppercase font-medium">{color}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -249,12 +282,13 @@ export default function AddPageNumbersTool() {
                       
                       {/* Önizleme Sayfa Numarası Overlayer */}
                       <div 
-                        className="absolute tracking-tight font-medium text-black"
+                        className="absolute tracking-tight font-medium"
                         style={{
+                          color: color,
                           fontSize: `${Math.max(10, fontSize * 0.7)}px`, // Görsel önizleme için fontu biraz scale ediyoruz
-                          ...(position.includes('top') ? { top: '8%' } : { bottom: '8%' }),
-                          ...(position.includes('left') ? { left: '8%' } : {}),
-                          ...(position.includes('right') ? { right: '8%' } : {}),
+                          ...(position.includes('top') ? { top: `${padding * 0.2}%` } : { bottom: `${padding * 0.2}%` }),
+                          ...(position.includes('left') ? { left: `${padding * 0.2}%` } : {}),
+                          ...(position.includes('right') ? { right: `${padding * 0.2}%` } : {}),
                           ...(position.includes('center') ? { left: '50%', transform: 'translateX(-50%)' } : {}),
                         }}
                       >
