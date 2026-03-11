@@ -131,18 +131,24 @@ export default function ImageToPdfTool() {
         </p>
       </div>
 
-      <FileUpload 
-        onFilesSelected={handleFilesSelected} 
-        accept="image/png, image/jpeg" 
-        label="Görselleri buraya sürükleyin (JPG, PNG)"
-      />
+      <div className="relative">
+        <FileUpload 
+          onFilesSelected={handleFilesSelected} 
+          accept="image/png, image/jpeg" 
+          label="Görselleri buraya sürükleyin (JPG, PNG)"
+        />
 
-      {isAddingImages && (
-        <div className="flex items-center justify-center gap-2 text-primary font-bold animate-pulse py-4">
-          <Loader2 className="animate-spin" />
-          Görseller işleniyor...
-        </div>
-      )}
+        {(isAddingImages || isProcessing) && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background/60 backdrop-blur-sm rounded-3xl border border-primary/20 animate-in fade-in duration-300">
+            <div className="p-4 rounded-2xl bg-primary/10 text-primary shadow-xl shadow-primary/10">
+              <Loader2 className="w-10 h-10 animate-spin" />
+            </div>
+            <p className="font-bold text-lg text-primary animate-pulse">
+              {isAddingImages ? "Görseller işleniyor..." : "PDF oluşturuluyor..."}
+            </p>
+          </div>
+        )}
+      </div>
 
       {images.length > 0 && (
         <div className="space-y-6">
