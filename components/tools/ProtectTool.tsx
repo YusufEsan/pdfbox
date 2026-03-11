@@ -9,7 +9,6 @@ import {
   Unlock, 
   Eye, 
   EyeOff, 
-  ShieldCheck, 
   Loader2, 
   Download, 
   ShieldAlert,
@@ -131,10 +130,6 @@ export default function ProtectTool() {
 
           {!isSuccess ? (
             <div className="p-8 rounded-3xl border border-border bg-card space-y-6 shadow-xl relative overflow-hidden">
-               <div className="absolute -top-6 -left-6 p-4 opacity-[0.03] pointer-events-none -rotate-12">
-                 <ShieldCheck size={180} />
-               </div>
-
               <div className="space-y-4">
                 <label className="text-sm font-bold block text-muted-foreground">Dosya Parolasını Belirleyin</label>
                 <div className="relative group">
