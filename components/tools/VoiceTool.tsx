@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.7";
+    const v = "1.9.8";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -415,21 +415,33 @@ const VoiceTool = () => {
         
         if (!ttsEngineRef.current || !targetedText) return;
         
-        // If already playing and this isn't a force-speak, we toggle pause
+        // v1.9.8: Hardware-level resume if suspended
+        if (isPaused && audioContextRef.current?.state === 'suspended') {
+            await audioContextRef.current.resume();
+            setIsPaused(false);
+            setIsPlaying(true);
+            setStatus("Devam ediyor...");
+            return;
+        }
+
+        // If already playing, we trigger pause (suspend)
         if (isPlaying && !isPaused && !overrideText) { 
             pause(); 
             return; 
         }
 
-        const isResuming = isPaused && !overrideText;
         stopRequestedRef.current = false;
         setIsPlaying(true);
-        setIsPaused(false);
-        setStatus(isResuming ? "Devam ediyor..." : "Seslendiriliyor...");
-
+        const isResuming = isPaused && audioContextRef.current?.state === 'suspended';
+        
         try {
             if (!audioContextRef.current) {
                 audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+            }
+            
+            // If the context was left suspended, resume it
+            if (audioContextRef.current.state === 'suspended') {
+                await audioContextRef.current.resume();
             }
             
             if (!isResuming) {
@@ -437,9 +449,8 @@ const VoiceTool = () => {
                 const sentences = splitIntoSentences(cleanedText);
                 sentencesRef.current = sentences;
                 currentIndexRef.current = 0;
+                await speakSegment(currentIndexRef.current);
             }
-            
-            await speakSegment(currentIndexRef.current);
         } catch (error) {
             console.error("Seslendirme Hatası:", error);
             const msg = error instanceof Error ? error.message : "Bilinmeyen hata";
@@ -516,20 +527,26 @@ const VoiceTool = () => {
         audioSourceRef.current = source;
     };
 
-    const pause = () => {
-        stopRequestedRef.current = true;
-        if (audioSourceRef.current) {
-            audioSourceRef.current.stop();
-            audioSourceRef.current = null;
+    const pause = async () => {
+        if (audioContextRef.current && audioContextRef.current.state === 'running') {
+            await audioContextRef.current.suspend();
+            setIsPaused(true);
+            setStatus("Duraklatıldı");
         }
-        setIsPaused(true);
-        setStatus("Duraklatıldı");
     };
 
-    const stop = () => {
+    const stop = async () => {
         stopRequestedRef.current = true;
+        
+        // v1.9.8: Must resume before stopping to clear buffers correctly
+        if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+            await audioContextRef.current.resume();
+        }
+
         if (audioSourceRef.current) {
-            audioSourceRef.current.stop();
+            try {
+                audioSourceRef.current.stop();
+            } catch (e) { /* ignore already stopped */ }
             audioSourceRef.current = null;
         }
         sentencesRef.current = [];
