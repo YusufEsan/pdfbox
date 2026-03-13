@@ -30,7 +30,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.6.0";
+    const v = "1.6.8";
 
     const [file, setFile] = useState<File | null>(null);
     const [isExtracting, setIsExtracting] = useState(false);
@@ -43,9 +43,6 @@ const VoiceTool = () => {
     
     const isInitializingRef = useRef(false);
     
-    const [speed, setSpeed] = useState(1.0);
-    const [volume, setVolume] = useState(1.0);
-    
     const ttsModuleRef = useRef<any>(null);
     const ttsEngineRef = useRef<any>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -57,31 +54,90 @@ const VoiceTool = () => {
     
     const { toast } = useToast();
 
-    // Clean text for TTS - Striker version 1.5.6
+    // Clean text for TTS - v1.6.6 (Magnet Healing)
     const cleanTextForTTS = (rawText: string) => {
-        // 1. Basic cleanup: keep only useful characters
-        let cleaned = rawText
+        if (!rawText) return "";
+        
+        // 1. Unicode Normalization & Basic Cleanup
+        let cleaned = rawText.normalize('NFC')
+            .replace(/[•\*\-]/g, ', ')
             .replace(/[^\w\sğüşıöçĞÜŞİÖÇ.,!?;:-]/g, ' ')
             .replace(/\s+/g, ' ')
             .trim();
 
-        // 2. Filter garbage words (heuristic to avoid OOV crashes)
-        const words = cleaned.split(' ');
-        const validWords = words.filter(word => {
-            if (word.length > 25) return false; 
-            if (word.length > 3) {
-                const vowels = /[aeıioöuüAEIİOÖUÜ]/;
-                if (!vowels.test(word)) return false;
-            }
-            return true;
-        });
+        // 2. STAGE 1: Bridge Fragment Healing
+        // Fixes "yeti ş tirilmesi" or "Örne ğ in" instantly
+        cleaned = cleaned.replace(/([a-zA-Z0-9ğüşıöçĞÜŞİÖÇ])\s+([ğüşıöçĞÜŞİÖÇ])\s+([a-zA-Z0-9ğüşıöçĞÜŞİÖÇ])/g, '$1$2$3');
+        cleaned = cleaned.replace(/([a-zA-Z0-9ğüşıöçĞÜŞİÖÇ])\s+([ğüşıöçĞÜŞİÖÇ])(?=\s|\b|[.,!?;:])/g, '$1$2');
+        cleaned = cleaned.replace(/(?<=\s|\b|^)([ğüşıöçĞÜŞİÖÇ])\s+([a-zA-Z0-9ğüşıöçĞÜŞİÖÇ])/g, '$1$2');
 
-        return validWords.join(' ');
+        // 3. STAGE 2: Iterative Singleton Healing (v1.6.6)
+        // For general orphans like "i" or shattered words like "s a n a l"
+        const validOneLetterWords = /^[oO0-9]$/; 
+        for (let pass = 0; pass < 6; pass++) {
+            const words = cleaned.split(' ');
+            let healed: string[] = [];
+            let changed = false;
+
+            for (let i = 0; i < words.length; i++) {
+                const current = words[i];
+                const next = words[i + 1];
+
+                if (next !== undefined) {
+                    // Rule: Join if either is length 1 and NOT a valid word
+                    if ((current.length === 1 && !validOneLetterWords.test(current)) || 
+                        (next.length === 1 && !validOneLetterWords.test(next))) {
+                        healed.push(current + next);
+                        i++; 
+                        changed = true;
+                    } else {
+                        healed.push(current);
+                    }
+                } else {
+                    healed.push(current);
+                }
+            }
+            cleaned = healed.join(' ');
+            if (!changed) break;
+        }
+
+        // 4. Punctuation Spacing Cleanup
+        return cleaned
+            .replace(/\s+([.,!?;:])/g, '$1') 
+            .replace(/([.,!?;:])(?=[a-zA-ZğüşıöçĞÜŞİÖÇ0-9])/g, '$1 ')
+            .trim();
     };
 
-    // Split text into sentences for chunking
+    // Split text into sentences for chunking - v1.6.2 List-Aware
     const splitIntoSentences = (longText: string) => {
-        return longText.match(/[^.!?]+[.!?]+/g) || [longText];
+        // 1. Split by standard punctuation
+        const segments: string[] = Array.from(longText.match(/[^.!?:\;]+[.!?:\;]+/g) || []);
+        
+        // 2. Handle list-like structures (split by remaining large chunks)
+        const matchedText = segments.join('');
+        const remaining = longText.slice(matchedText.length).trim();
+        
+        if (remaining) {
+            // Check if remaining has commas or enough length to be a sentence
+            if (remaining.length > 3) segments.push(remaining + ".");
+        }
+        
+        // 3. Post-process segments to ensure they aren't too massive
+        const final: string[] = [];
+        segments.forEach(s => {
+            const trimmed = s.trim();
+            if (trimmed.length > 150) {
+                // Split long run-on sentences by commas if needed
+                const sub = trimmed.split(/[,]/);
+                sub.forEach(part => {
+                   if (part.trim().length > 0) final.push(part.trim() + ".");
+                });
+            } else if (trimmed.length > 0) {
+                final.push(trimmed);
+            }
+        });
+
+        return final.length > 0 ? final : [longText];
     };
 
     useEffect(() => {
@@ -298,8 +354,9 @@ const VoiceTool = () => {
                 setProgress((i / pdf.numPages) * 100);
             }
 
-            setText(fullText);
-            setStatus("Metin hazır");
+            const healedText = cleanTextForTTS(fullText);
+            setText(healedText);
+            setStatus("Metin hazır (İyileştirildi)");
         } catch (error) {
             toast({
                 title: "Hata",
@@ -367,7 +424,7 @@ const VoiceTool = () => {
             const result = ttsEngineRef.current.generate({
                 text: segment, 
                 sid: 0,
-                speed: speed
+                speed: 1.0
             });
 
             if (!result || !result.samples) {
@@ -393,7 +450,7 @@ const VoiceTool = () => {
         source.buffer = buffer;
         
         const gainNode = audioContextRef.current.createGain();
-        gainNode.gain.value = volume;
+        gainNode.gain.value = 1.0;
         
         source.connect(gainNode);
         gainNode.connect(audioContextRef.current.destination);
@@ -433,7 +490,7 @@ const VoiceTool = () => {
                     
                     <div>
                         <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-amber-600">
-                            PDF Seslendirici (v1.4.6)
+                            PDF Seslendirici
                         </h2>
                         <p className="text-muted-foreground max-w-md mx-auto mt-2">
                             Türkçe Piper Neural TTS teknolojisi. Tamamen tarayıcıda, anonim ve hızlı.
@@ -460,98 +517,66 @@ const VoiceTool = () => {
             </Card>
 
             {file && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <Card className="md:col-span-2 p-6 overflow-hidden">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-primary" />
-                                <h3 className="font-semibold">İçerik Önizleme</h3>
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <Card className="p-6">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2 bg-primary/10 rounded-lg">
+                                    <FileText className="w-5 h-5 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold">İçerik Önizleme</h3>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tight px-1.5 h-4">{file.name}</Badge>
+                                        <span className="text-xs text-muted-foreground">{text?.length || 0} karakter</span>
+                                    </div>
+                                </div>
                             </div>
-                            <Badge variant="outline">{file.name}</Badge>
+
+                            <div className="flex items-center gap-2 w-full md:w-auto">
+                                <Button 
+                                    className="flex-1 md:w-32 shadow-lg shadow-primary/20 bg-gradient-to-r from-red-600 to-amber-600"
+                                    disabled={!isEngineReady || !text || isExtracting}
+                                    onClick={() => speak()}
+                                >
+                                    {isPlaying ? (
+                                        <><Pause className="mr-2 h-4 w-4" /> Duraklat</>
+                                    ) : (
+                                        <><Play className="mr-2 h-4 w-4" /> Dinle</>
+                                    )}
+                                </Button>
+                                <Button 
+                                    variant="outline" 
+                                    size="icon"
+                                    className="w-10 h-10 rounded-md border-border"
+                                    onClick={stop} 
+                                    disabled={!isPlaying}
+                                >
+                                    <Square className="h-4 w-4 fill-current" />
+                                </Button>
+                            </div>
                         </div>
-                        <div className="h-[400px] overflow-y-auto rounded-lg border bg-muted/30 p-4 text-sm leading-relaxed whitespace-pre-wrap font-serif">
+
+                        <div className="h-[500px] overflow-y-auto rounded-2xl ring-1 ring-white/5 bg-zinc-950/40 p-8 text-base leading-relaxed whitespace-pre-wrap font-sans antialiased shadow-2xl backdrop-blur-sm scrollbar-thin scrollbar-thumb-zinc-800">
                             {isExtracting ? (
                                 <div className="flex flex-col items-center justify-center h-full gap-4 opacity-50">
-                                    <Loader2 className="w-8 h-8 animate-spin" />
-                                    <p>Metin analiz ediliyor...</p>
+                                    <div className="relative">
+                                        <div className="absolute -inset-4 bg-primary/10 rounded-full blur-xl animate-pulse" />
+                                        <Loader2 className="w-10 h-10 animate-spin text-primary relative" />
+                                    </div>
+                                    <p className="text-muted-foreground font-medium">Metin analiz ediliyor...</p>
                                 </div>
                             ) : text || "Metin bulunamadı."}
                         </div>
                     </Card>
 
-                    <div className="space-y-6">
-                        <Card className="p-6 border-primary/10">
-                            <div className="flex items-center gap-2 mb-6">
-                                <Settings2 className="w-5 h-5 text-primary" />
-                                <h3 className="font-semibold">Ses Ayarları</h3>
-                            </div>
-                            
-                            <div className="space-y-8">
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground flex items-center gap-2">
-                                            Hız
-                                            <Badge variant="secondary" className="px-1 py-0">{speed}x</Badge>
-                                        </span>
-                                    </div>
-                                    <Slider 
-                                        value={[speed]} 
-                                        onValueChange={([val]: number[]) => setSpeed(val)}
-                                        min={0.5} 
-                                        max={2.0} 
-                                        step={0.1}
-                                        className="py-4"
-                                    />
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground flex items-center gap-2">
-                                            Ses Seviyesi
-                                            <Badge variant="secondary" className="px-1 py-0">{Math.round(volume * 100)}%</Badge>
-                                        </span>
-                                        <Volume2 className="w-4 h-4 text-muted-foreground" />
-                                    </div>
-                                    <Slider 
-                                        value={[volume]} 
-                                        onValueChange={([val]: number[]) => setVolume(val)}
-                                        min={0} 
-                                        max={1.0} 
-                                        step={0.05}
-                                        className="py-4"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="mt-8 space-y-3">
-                                <Button 
-                                    className="w-full text-lg h-12 shadow-lg shadow-primary/20 bg-gradient-to-r from-red-600 to-amber-600"
-                                    disabled={!isEngineReady || !text || isExtracting}
-                                    onClick={() => speak()}
-                                >
-                                    {isPlaying ? (
-                                        <><Pause className="mr-2 h-5 w-5" /> Duraklat</>
-                                    ) : (
-                                        <><Play className="mr-2 h-5 w-5" /> Dinle</>
-                                    )}
-                                </Button>
-                                
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Button variant="outline" size="sm" onClick={stop} disabled={!isPlaying}>
-                                        <Square className="mr-2 h-4 w-4" /> Durdur
-                                    </Button>
-                                </div>
-                            </div>
-                        </Card>
-
-                        <Alert className="bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900">
-                            <Info className="h-4 w-4 text-amber-600" />
-                            <AlertTitle className="text-amber-700 dark:text-amber-400">İpucu</AlertTitle>
-                            <AlertDescription className="text-amber-600/80 dark:text-amber-500/80 text-xs">
-                                Uzun PDF'lerde ilk paragraf seslendirilir. Ses motoru tarayıcı belleğini korumak için korumalı modda çalışmaktadır.
-                            </AlertDescription>
-                        </Alert>
-                    </div>
+                    <Alert className="bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900 mx-auto max-w-2xl">
+                        <Info className="h-4 w-4 text-amber-600" />
+                        <AlertTitle className="text-amber-700 dark:text-amber-400">Not</AlertTitle>
+                        <AlertDescription className="text-amber-600/80 dark:text-amber-500/80 text-xs text-center">
+                            Parçalama modu devrede: Çok uzun dökümanlar tarayıcı belleğini korumak için cümle cümle işlenir.
+                        </AlertDescription>
+                    </Alert>
                 </div>
             )}
         </div>
