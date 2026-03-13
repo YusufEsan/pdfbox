@@ -649,14 +649,6 @@ const VoiceTool = () => {
                         </div>
                     ) : (
                         <div className="w-full space-y-4 animate-in fade-in slide-in-from-top-4">
-                            <div className="h-[300px] overflow-hidden rounded-3xl ring-1 ring-indigo-500/10 bg-slate-950/40 p-1 shadow-2xl backdrop-blur-2xl">
-                                <textarea
-                                    value={freeText}
-                                    onChange={(e) => setFreeText(e.target.value)}
-                                    className="w-full h-full bg-transparent p-8 text-base leading-relaxed font-sans antialiased text-slate-300 outline-none resize-none scrollbar-thin scrollbar-thumb-slate-800 placeholder:text-slate-700"
-                                    placeholder="Buraya istediğiniz metni yazın..."
-                                />
-                            </div>
                             <div className="flex flex-col md:flex-row items-center justify-center gap-6">
                                 <div className="flex items-center gap-3 bg-slate-900/50 px-4 py-2.5 rounded-2xl border border-slate-800/50 shadow-inner">
                                     <FileAudio className={`w-5 h-5 ${volume === 0 ? 'text-slate-500' : 'text-blue-400 animate-pulse-slow'}`} />
@@ -694,6 +686,14 @@ const VoiceTool = () => {
                                         <Square className="h-6 w-6 fill-current" />
                                     </Button>
                                 )}
+                            </div>
+                            <div className="h-[300px] overflow-hidden rounded-3xl ring-1 ring-indigo-500/10 bg-slate-950/40 p-1 shadow-2xl backdrop-blur-2xl">
+                                <textarea
+                                    value={freeText}
+                                    onChange={(e) => setFreeText(e.target.value)}
+                                    className="w-full h-full bg-transparent p-8 text-base leading-relaxed font-sans antialiased text-slate-300 outline-none resize-none scrollbar-thin scrollbar-thumb-slate-800 placeholder:text-slate-700"
+                                    placeholder="Buraya istediğiniz metni yazın..."
+                                />
                             </div>
                         </div>
                     )}
