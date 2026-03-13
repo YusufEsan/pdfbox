@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.5";
+    const v = "1.9.6";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -665,11 +665,13 @@ const VoiceTool = () => {
                                 <div className="p-2 bg-primary/10 rounded-lg">
                                     <FileText className="w-5 h-5 text-primary" />
                                 </div>
-                                <div>
-                                    <h3 className="font-semibold">İçerik Önizleme</h3>
-                                    <div className="flex items-center gap-2">
-                                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tight px-1.5 h-4">{file.name}</Badge>
-                                        <span className="text-xs text-slate-500 font-medium">
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="font-semibold truncate">İçerik Önizleme</h3>
+                                    <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tight px-1.5 h-4 max-w-[150px] truncate">
+                                            {file.name}
+                                        </Badge>
+                                        <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
                                             {(isEditing ? editedText : text).length.toLocaleString()} karakter
                                         </span>
                                     </div>
@@ -677,6 +679,22 @@ const VoiceTool = () => {
                             </div>
 
                             <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-800/50">
+                                    <FileAudio className={`w-4 h-4 ${volume === 0 ? 'text-slate-500' : 'text-blue-400 animate-pulse-slow'}`} />
+                                    <Slider
+                                        value={[volume * 100]}
+                                        max={200}
+                                        step={1}
+                                        onValueChange={(vals) => setVolume(vals[0] / 100)}
+                                        className="w-24"
+                                    />
+                                    <span className="text-[10px] font-mono text-slate-500 w-8 text-right">
+                                        {Math.round(volume * 100)}%
+                                    </span>
+                                </div>
+
+                                <div className="h-6 w-px bg-slate-800/50 mx-1" />
+
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -703,24 +721,6 @@ const VoiceTool = () => {
                                         </>
                                     )}
                                 </Button>
-
-                                <div className="h-6 w-px bg-slate-800/50 mx-1" />
-
-                                <div className="flex items-center gap-3 bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-800/50">
-                                    <FileAudio className={`w-4 h-4 ${volume === 0 ? 'text-slate-500' : 'text-blue-400 animate-pulse-slow'}`} />
-                                    <Slider
-                                        value={[volume * 100]}
-                                        max={100}
-                                        step={1}
-                                        onValueChange={(vals) => setVolume(vals[0] / 100)}
-                                        className="w-24"
-                                    />
-                                    <span className="text-[10px] font-mono text-slate-500 w-8 text-right">
-                                        {Math.round(volume * 100)}%
-                                    </span>
-                                </div>
-
-                                <div className="h-6 w-px bg-slate-800/50 mx-1" />
 
                                 <Button
                                     onClick={() => speak()}
