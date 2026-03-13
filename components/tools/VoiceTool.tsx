@@ -42,8 +42,9 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.8.0";
+    const v = "1.9.0";
 
+    const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
     const [file, setFile] = useState<File | null>(null);
     const [isExtracting, setIsExtracting] = useState(false);
     const [text, setText] = useState("");
@@ -53,6 +54,7 @@ const VoiceTool = () => {
     const [progress, setProgress] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState("");
+    const [freeText, setFreeText] = useState(""); // State for Manual Mode
     const [status, setStatus] = useState<string>("");
     
     const isInitializingRef = useRef(false);
@@ -385,7 +387,14 @@ const VoiceTool = () => {
     };
 
     const speak = async (overrideText: string = "") => {
-        const targetedText = overrideText || (isEditing ? editedText : text);
+        let targetedText = "";
+        
+        if (mode === 'manual') {
+            targetedText = overrideText || freeText;
+        } else {
+            targetedText = overrideText || (isEditing ? editedText : text);
+        }
+        
         if (!ttsEngineRef.current || !targetedText) return;
         
         if (isPlaying && !overrideText) { 
@@ -499,29 +508,48 @@ const VoiceTool = () => {
                 <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px]" />
                 <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-600/10 rounded-full blur-[120px]" />
                 
-                <div className="relative flex flex-col items-center gap-6 text-center">
+                <div className="relative flex flex-col items-center gap-8 text-center">
+                    {/* Mode Toggle */}
+                    <div className="flex bg-slate-900/40 p-1.5 rounded-2xl ring-1 ring-white/5 backdrop-blur-md">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setMode('pdf')}
+                            className={`rounded-xl px-6 h-9 transition-all duration-300 ${mode === 'pdf' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        >
+                            <FileText className="w-4 h-4 mr-2" />
+                            PDF Seslendirici
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setMode('manual')}
+                            className={`rounded-xl px-6 h-9 transition-all duration-300 ${mode === 'manual' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                        >
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Serbest Metin
+                        </Button>
+                    </div>
+
                     <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-25" />
                         <div className="relative bg-background rounded-full p-4 border border-border shadow-xl">
                             <FileAudio className="w-12 h-12 text-primary" />
                         </div>
                     </div>
-                    
-                    <div>
-                        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                            PDF Seslendirici
-                        </h2>
-                        <p className="text-muted-foreground max-w-md mx-auto mt-2">
-                            Türkçe Piper Neural TTS teknolojisi. Tamamen tarayıcıda, anonim ve hızlı.
-                        </p>
+
+                    <div className="space-y-4 w-full">
+                        <div className="text-center">
+                            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                                {mode === 'pdf' ? "PDF Seslendirici" : "Serbest Metin"}
+                            </h2>
+                            <p className="text-muted-foreground max-w-md mx-auto mt-2">
+                                {mode === 'pdf' 
+                                    ? "Türkçe Piper Neural TTS teknolojisi. Tamamen tarayıcıda, anonim ve hızlı."
+                                    : "İstediğiniz metni doğrudan buraya yazın veya yapıştırın."}
+                            </p>
+                        </div>
                     </div>
-                    
-                    <FileUpload 
-                        onFilesSelected={(files) => handleFileChange(files[0])} 
-                        accept=".pdf"
-                        multiple={false}
-                        disabled={isModelLoading || !isEngineReady}
-                    />
 
                     {isModelLoading && (
                         <div className="w-full space-y-2">
@@ -532,10 +560,68 @@ const VoiceTool = () => {
                             <Progress value={progress || 10} className="h-2 w-full" />
                         </div>
                     )}
+
+                    {mode === 'pdf' ? (
+                        <div
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                const droppedFile = e.dataTransfer.files[0];
+                                if (droppedFile && droppedFile.type === 'application/pdf') {
+                                    handleFileChange(droppedFile);
+                                }
+                            }}
+                            className="w-full h-48 rounded-3xl border-2 border-dashed border-slate-800 hover:border-primary/50 bg-slate-900/10 flex flex-col items-center justify-center gap-4 group cursor-pointer transition-all duration-300 relative overflow-hidden"
+                            onClick={() => document.getElementById('pdf-upload')?.click()}
+                        >
+                            <input
+                                id="pdf-upload"
+                                type="file"
+                                accept=".pdf"
+                                onChange={(e) => {
+                                    const selectedFile = e.target.files?.[0];
+                                    if (selectedFile) handleFileChange(selectedFile);
+                                }}
+                                className="hidden"
+                            />
+                            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="p-4 bg-primary/10 rounded-full group-hover:scale-110 transition-transform">
+                                <Upload className="w-8 h-8 text-primary" />
+                            </div>
+                            <div className="text-center relative">
+                                <p className="font-semibold text-slate-300">PDF yüklemek için tıklayın veya sürükleyin</p>
+                                <p className="text-slate-500 text-sm">Seslendirilecek metni pdf'den ayıklayalım</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-full space-y-4">
+                            <div className="h-[300px] overflow-hidden rounded-3xl ring-1 ring-indigo-500/10 bg-slate-950/40 p-1 shadow-2xl backdrop-blur-2xl">
+                                <textarea
+                                    value={freeText}
+                                    onChange={(e) => setFreeText(e.target.value)}
+                                    className="w-full h-full bg-transparent p-8 text-base leading-relaxed font-sans antialiased text-slate-300 outline-none resize-none scrollbar-thin scrollbar-thumb-slate-800 placeholder:text-slate-700"
+                                    placeholder="Buraya istediğiniz metni yazın..."
+                                />
+                            </div>
+                            <div className="flex justify-center">
+                                <Button
+                                    onClick={() => speak()}
+                                    disabled={!freeText || isPlaying || !isEngineReady}
+                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-900/20 h-14 px-10 rounded-2xl gap-3 font-bold text-lg transition-all active:scale-95"
+                                >
+                                    {isPlaying ? (
+                                        <><Square className="w-5 h-5 fill-current" /> Durdur</>
+                                    ) : (
+                                        <><Play className="w-5 h-5 fill-current" /> Metni Seslendir</>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </Card>
 
-            {file && (
+            {mode === 'pdf' && file && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
                     <Card className="p-8 border-none bg-slate-900/30 backdrop-blur-2xl shadow-none">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
