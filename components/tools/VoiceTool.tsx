@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.8";
+    const v = "1.9.9";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -58,6 +58,11 @@ const VoiceTool = () => {
     const [editedText, setEditedText] = useState("");
     const [freeText, setFreeText] = useState(""); // State for Manual Mode
     const [volume, setVolume] = useState(1.0);
+    const [activeSentenceIndex, setActiveSentenceIndex] = useState<number | null>(null);
+    const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
+    const highlightIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const startTimeRef = useRef<number>(0);
+    const currentBufferDurationRef = useRef<number>(0);
     const [status, setStatus] = useState<string>("");
     
     const isInitializingRef = useRef(false);
@@ -517,7 +522,34 @@ const VoiceTool = () => {
         
         source.connect(gainNodeRef.current);
 
+        // v1.9.9: Word-level highlight tracking
+        setActiveSentenceIndex(index);
+        startTimeRef.current = audioContextRef.current.currentTime;
+        currentBufferDurationRef.current = buffer.duration;
+        
+        const words = sentencesRef.current[index].split(/\s+/).filter(w => w.length > 0);
+        
+        if (highlightIntervalRef.current) clearInterval(highlightIntervalRef.current);
+        
+        highlightIntervalRef.current = setInterval(() => {
+            if (!audioContextRef.current || audioContextRef.current.state === 'suspended') return;
+            
+            const elapsed = audioContextRef.current.currentTime - startTimeRef.current;
+            const progress = elapsed / currentBufferDurationRef.current;
+            const wordIdx = Math.min(Math.floor(progress * words.length), words.length - 1);
+            
+            setActiveWordIndex(wordIdx);
+            
+            // Auto-scroll highlight into view
+            const activeEl = document.getElementById(`word-${index}-${wordIdx}`);
+            if (activeEl) {
+                activeEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+            }
+        }, 50);
+
         source.onended = () => {
+            if (highlightIntervalRef.current) clearInterval(highlightIntervalRef.current);
+            setActiveWordIndex(null);
             if (!stopRequestedRef.current) {
                 speakSegment(index + 1);
             }
@@ -530,6 +562,7 @@ const VoiceTool = () => {
     const pause = async () => {
         if (audioContextRef.current && audioContextRef.current.state === 'running') {
             await audioContextRef.current.suspend();
+            if (highlightIntervalRef.current) clearInterval(highlightIntervalRef.current);
             setIsPaused(true);
             setStatus("Duraklatıldı");
         }
@@ -537,6 +570,9 @@ const VoiceTool = () => {
 
     const stop = async () => {
         stopRequestedRef.current = true;
+        if (highlightIntervalRef.current) clearInterval(highlightIntervalRef.current);
+        setActiveSentenceIndex(null);
+        setActiveWordIndex(null);
         
         // v1.9.8: Must resume before stopping to clear buffers correctly
         if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
@@ -717,8 +753,8 @@ const VoiceTool = () => {
                 </div>
             </Card>
 
-            {mode === 'pdf' && file && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            {(mode === 'pdf' || freeText) && (
+                <div className={`mt-6 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700 ${mode === 'manual' && (isPlaying || activeSentenceIndex !== null) ? 'block' : (mode === 'manual' ? 'hidden' : 'block')}`}>
                     <Card className="p-8 border-none bg-slate-900/30 backdrop-blur-2xl shadow-none">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
                             <div className="flex items-center gap-4">
@@ -726,14 +762,16 @@ const VoiceTool = () => {
                                     <FileText className="w-5 h-5 text-primary" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <h3 className="font-semibold text-lg leading-none mb-2">İçerik Önizleme</h3>
+                                    <h3 className="font-semibold text-lg leading-none mb-2">Canlı Takip & Önizleme</h3>
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tight px-2 h-5 bg-slate-800/80 border-slate-700 text-slate-300 max-w-[200px] truncate">
-                                            {file.name}
-                                        </Badge>
+                                        {mode === 'pdf' && file && (
+                                            <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tight px-2 h-5 bg-slate-800/80 border-slate-700 text-slate-300 max-w-[200px] truncate">
+                                                {file.name}
+                                            </Badge>
+                                        )}
                                         <div className="flex items-center gap-1.5 text-slate-500 font-medium">
                                             <Type className="w-3.5 h-3.5" />
-                                            <span className="text-xs">{(isEditing ? editedText : text).length.toLocaleString()} karakter</span>
+                                            <span className="text-xs">{(isEditing ? editedText : (mode === 'manual' ? freeText : text)).length.toLocaleString()} karakter</span>
                                         </div>
                                     </div>
                                 </div>
@@ -824,7 +862,37 @@ const VoiceTool = () => {
                                 />
                             ) : (
                                 <div className="w-full h-full overflow-y-auto p-10 text-base leading-relaxed whitespace-pre-wrap font-sans antialiased scrollbar-thin scrollbar-thumb-slate-800 text-slate-300">
-                                    {text || "Metin bulunamadı."}
+                                    {(text || "Metin bulunamadı.").split(/([.!?]+\s+)/).map((part, sIdx) => {
+                                        // Simple sentence-level mapping. Note: split with capture group keeps delimiters
+                                        // We only want to wrap actual words in the sentence parts
+                                        if (part.match(/^[.!?]+\s+$/)) return <span key={`del-${sIdx}`}>{part}</span>;
+                                        
+                                        // This is a sentence-ish part
+                                        const logicalSentenceIdx = Math.floor(sIdx / 2);
+                                        const words = part.split(/(\s+)/);
+                                        
+                                        let currentWordCounter = 0;
+                                        return (
+                                            <span key={`sent-${logicalSentenceIdx}`} className={activeSentenceIndex === logicalSentenceIdx ? "border-b border-blue-500/20" : ""}>
+                                                {words.map((wPart, wIdx) => {
+                                                    if (wPart.match(/^\s+$/)) return <span key={`ws-${wIdx}`}>{wPart}</span>;
+                                                    
+                                                    const wordIdx = currentWordCounter++;
+                                                    const isActive = activeSentenceIndex === logicalSentenceIdx && activeWordIndex === wordIdx;
+                                                    
+                                                    return (
+                                                        <span 
+                                                            id={`word-${logicalSentenceIdx}-${wordIdx}`}
+                                                            key={`word-${wIdx}`} 
+                                                            className={`transition-all duration-200 rounded-sm px-0.5 ${isActive ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : ''}`}
+                                                        >
+                                                            {wPart}
+                                                        </span>
+                                                    );
+                                                })}
+                                            </span>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
