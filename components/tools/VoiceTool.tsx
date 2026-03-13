@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.2";
+    const v = "1.9.3";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -569,13 +569,19 @@ const VoiceTool = () => {
                             onDragOver={(e) => e.preventDefault()}
                             onDrop={(e) => {
                                 e.preventDefault();
+                                if (!isEngineReady) return;
                                 const droppedFile = e.dataTransfer.files[0];
                                 if (droppedFile && droppedFile.type === 'application/pdf') {
                                     handleFileChange(droppedFile);
                                 }
                             }}
-                            className="w-full h-48 rounded-3xl border-2 border-dashed border-slate-800 hover:border-primary/50 bg-slate-900/10 flex flex-col items-center justify-center gap-4 group cursor-pointer transition-all duration-300 relative overflow-hidden"
-                            onClick={() => document.getElementById('pdf-upload')?.click()}
+                            className={`w-full h-48 rounded-3xl border-2 border-dashed border-slate-800 transition-all duration-300 relative overflow-hidden flex flex-col items-center justify-center gap-4 group 
+                                ${isEngineReady 
+                                    ? "hover:border-primary/50 bg-slate-900/10 cursor-pointer" 
+                                    : "opacity-40 cursor-not-allowed bg-slate-900/5"}`}
+                            onClick={() => {
+                                if (isEngineReady) document.getElementById('pdf-upload')?.click();
+                            }}
                         >
                             <input
                                 id="pdf-upload"
@@ -592,8 +598,12 @@ const VoiceTool = () => {
                                 <Upload className="w-8 h-8 text-primary" />
                             </div>
                             <div className="text-center relative">
-                                <p className="font-semibold text-slate-300">PDF yüklemek için tıklayın veya sürükleyin</p>
-                                <p className="text-slate-500 text-sm">Seslendirilecek metni pdf'den ayıklayalım</p>
+                                <p className="font-semibold text-slate-300">
+                                    {!isEngineReady ? "Model yükleniyor..." : "PDF yüklemek için tıklayın veya sürükleyin"}
+                                </p>
+                                <p className="text-slate-500 text-sm">
+                                    {!isEngineReady ? "Motor hazır olana kadar bekleyiniz" : "Seslendirilecek metni pdf'den ayıklayalım"}
+                                </p>
                             </div>
                         </div>
                     ) : (
