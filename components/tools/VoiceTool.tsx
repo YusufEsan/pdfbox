@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.6";
+    const v = "1.9.7";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -52,6 +52,7 @@ const VoiceTool = () => {
     const [isModelLoading, setIsModelLoading] = useState(false);
     const [isEngineReady, setIsEngineReady] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
     const [progress, setProgress] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState("");
@@ -414,30 +415,35 @@ const VoiceTool = () => {
         
         if (!ttsEngineRef.current || !targetedText) return;
         
-        if (isPlaying && !overrideText) { 
-            stop(); 
+        // If already playing and this isn't a force-speak, we toggle pause
+        if (isPlaying && !isPaused && !overrideText) { 
+            pause(); 
             return; 
         }
 
+        const isResuming = isPaused && !overrideText;
         stopRequestedRef.current = false;
         setIsPlaying(true);
-        setStatus("Seslendiriliyor...");
+        setIsPaused(false);
+        setStatus(isResuming ? "Devam ediyor..." : "Seslendiriliyor...");
 
         try {
             if (!audioContextRef.current) {
                 audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
             }
             
-            const cleanedText = cleanTextForTTS(targetedText);
-            const sentences = splitIntoSentences(cleanedText);
-            sentencesRef.current = sentences;
-            currentIndexRef.current = 0;
+            if (!isResuming) {
+                const cleanedText = cleanTextForTTS(targetedText);
+                const sentences = splitIntoSentences(cleanedText);
+                sentencesRef.current = sentences;
+                currentIndexRef.current = 0;
+            }
             
-            await speakSegment(0);
+            await speakSegment(currentIndexRef.current);
         } catch (error) {
             console.error("Seslendirme Hatası:", error);
-            const msg = error instanceof Error ? error.message : "Bilinmeyen hata";
             setIsPlaying(false);
+            setIsPaused(false);
             setStatus(`Hata: ${msg}`);
             toast({
                 title: "Seslendirme Hatası",
@@ -509,6 +515,16 @@ const VoiceTool = () => {
         audioSourceRef.current = source;
     };
 
+    const pause = () => {
+        stopRequestedRef.current = true;
+        if (audioSourceRef.current) {
+            audioSourceRef.current.stop();
+            audioSourceRef.current = null;
+        }
+        setIsPaused(true);
+        setStatus("Duraklatıldı");
+    };
+
     const stop = () => {
         stopRequestedRef.current = true;
         if (audioSourceRef.current) {
@@ -518,6 +534,7 @@ const VoiceTool = () => {
         sentencesRef.current = [];
         currentIndexRef.current = 0;
         setIsPlaying(false);
+        setIsPaused(false);
         setStatus("Durduruldu");
     };
 
@@ -639,18 +656,43 @@ const VoiceTool = () => {
                                     placeholder="Buraya istediğiniz metni yazın..."
                                 />
                             </div>
-                            <div className="flex justify-center">
+                            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                                <div className="flex items-center gap-3 bg-slate-900/50 px-4 py-2.5 rounded-2xl border border-slate-800/50 shadow-inner">
+                                    <FileAudio className={`w-5 h-5 ${volume === 0 ? 'text-slate-500' : 'text-blue-400 animate-pulse-slow'}`} />
+                                    <Slider
+                                        value={[volume * 100]}
+                                        max={200}
+                                        step={1}
+                                        onValueChange={(vals) => setVolume(vals[0] / 100)}
+                                        className="w-32"
+                                    />
+                                    <span className="text-sm font-mono text-slate-400 w-10 text-right">
+                                        {Math.round(volume * 100)}%
+                                    </span>
+                                </div>
+
                                 <Button
                                     onClick={() => speak()}
-                                    disabled={!freeText || isPlaying || !isEngineReady}
+                                    disabled={!freeText || (isPlaying && !isPaused) || !isEngineReady}
                                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-900/20 h-14 px-10 rounded-2xl gap-3 font-bold text-lg transition-all active:scale-95"
                                 >
-                                    {isPlaying ? (
-                                        <><Square className="w-5 h-5 fill-current" /> Durdur</>
+                                    {isPlaying && !isPaused ? (
+                                        <><Pause className="w-5 h-5 fill-current" /> Duraklat</>
                                     ) : (
-                                        <><Play className="w-5 h-5 fill-current" /> Metni Seslendir</>
+                                        <><Play className="w-5 h-5 fill-current" /> {isPaused ? "Devam Et" : "Metni Seslendir"}</>
                                     )}
                                 </Button>
+
+                                {(isPlaying || isPaused) && (
+                                    <Button 
+                                        variant="outline" 
+                                        size="icon"
+                                        className="w-14 h-14 rounded-2xl border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-400"
+                                        onClick={stop}
+                                    >
+                                        <Square className="h-6 w-6 fill-current" />
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     )}
@@ -666,19 +708,20 @@ const VoiceTool = () => {
                                     <FileText className="w-5 h-5 text-primary" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <h3 className="font-semibold truncate">İçerik Önizleme</h3>
-                                    <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tight px-1.5 h-4 max-w-[150px] truncate">
+                                    <h3 className="font-semibold text-lg leading-none mb-2">İçerik Önizleme</h3>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tight px-2 h-5 bg-slate-800/80 border-slate-700 text-slate-300 max-w-[200px] truncate">
                                             {file.name}
                                         </Badge>
-                                        <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
-                                            {(isEditing ? editedText : text).length.toLocaleString()} karakter
-                                        </span>
+                                        <div className="flex items-center gap-1.5 text-slate-500 font-medium">
+                                            <Type className="w-3.5 h-3.5" />
+                                            <span className="text-xs">{(isEditing ? editedText : text).length.toLocaleString()} karakter</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 <div className="flex items-center gap-3 bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-800/50">
                                     <FileAudio className={`w-4 h-4 ${volume === 0 ? 'text-slate-500' : 'text-blue-400 animate-pulse-slow'}`} />
                                     <Slider
@@ -724,21 +767,21 @@ const VoiceTool = () => {
 
                                 <Button
                                     onClick={() => speak()}
-                                    disabled={!text || isPlaying || isExtracting || isEditing}
-                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20 h-10 px-6 rounded-xl gap-2 font-semibold transition-all"
+                                    disabled={!text || (isPlaying && !isPaused) || isExtracting || isEditing}
+                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20 h-10 px-6 rounded-xl gap-2 font-semibold transition-all min-w-[120px]"
                                 >
-                                    {isPlaying ? (
+                                    {isPlaying && !isPaused ? (
                                         <><Pause className="mr-2 h-4 w-4" /> Duraklat</>
                                     ) : (
-                                        <><Play className="mr-2 h-4 w-4" /> Dinle</>
+                                        <><Play className="mr-2 h-4 w-4" /> {isPaused ? "Devam" : "Dinle"}</>
                                     )}
                                 </Button>
                                 <Button 
                                     variant="outline" 
                                     size="icon"
-                                    className="w-10 h-10 rounded-xl border-border bg-slate-900/50 hover:bg-slate-800"
+                                    className="w-10 h-10 rounded-xl border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-400"
                                     onClick={stop} 
-                                    disabled={!isPlaying}
+                                    disabled={!isPlaying && !isPaused}
                                 >
                                     <Square className="h-4 w-4 fill-current" />
                                 </Button>
