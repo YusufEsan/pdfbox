@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.4";
+    const v = "1.9.5";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -65,12 +65,25 @@ const VoiceTool = () => {
     const ttsEngineRef = useRef<any>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
     const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+    const gainNodeRef = useRef<GainNode | null>(null);
     
     const sentencesRef = useRef<string[]>([]);
     const currentIndexRef = useRef(0);
     const stopRequestedRef = useRef(false);
     
     const { toast } = useToast();
+
+    // v1.9.5: Real-time volume update
+    useEffect(() => {
+        if (gainNodeRef.current) {
+            gainNodeRef.current.gain.setValueAtTime(volume, audioContextRef.current?.currentTime || 0);
+        }
+    }, [volume]);
+
+    // v1.9.5: Stop playback on mode switch
+    useEffect(() => {
+        stop();
+    }, [mode]);
 
     // Clean text for TTS - v1.6.6 (Magnet Healing)
     const cleanTextForTTS = (rawText: string) => {
@@ -477,11 +490,14 @@ const VoiceTool = () => {
         const source = audioContextRef.current.createBufferSource();
         source.buffer = buffer;
         
-        const gainNode = audioContextRef.current.createGain();
-        gainNode.gain.value = volume;
+        // v1.9.5: Use persistent GainNode for real-time control
+        if (!gainNodeRef.current) {
+            gainNodeRef.current = audioContextRef.current.createGain();
+            gainNodeRef.current.connect(audioContextRef.current.destination);
+        }
+        gainNodeRef.current.gain.value = volume;
         
-        source.connect(gainNode);
-        gainNode.connect(audioContextRef.current.destination);
+        source.connect(gainNodeRef.current);
 
         source.onended = () => {
             if (!stopRequestedRef.current) {
