@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.10";
+    const v = "1.9.11";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -63,6 +63,7 @@ const VoiceTool = () => {
     const highlightIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const startTimeRef = useRef<number>(0);
     const currentBufferDurationRef = useRef<number>(0);
+    const previewContainerRef = useRef<HTMLDivElement>(null);
     const [status, setStatus] = useState<string>("");
     
     const isInitializingRef = useRef(false);
@@ -540,11 +541,25 @@ const VoiceTool = () => {
             
             setActiveWordIndex(wordIdx);
             
-            // v1.9.10: Auto-scroll highlight into view (Internal container only)
+            // v1.9.11: Manual internal scroll to prevent global page snapping
             const activeEl = document.getElementById(`word-${index}-${wordIdx}`);
-            if (activeEl) {
-                // 'nearest' prevents global page snapping while keeping the word in the visible part of the container
-                activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            if (activeEl && previewContainerRef.current) {
+                const container = previewContainerRef.current;
+                const elTop = activeEl.offsetTop;
+                const elHeight = activeEl.offsetHeight;
+                const containerHeight = container.offsetHeight;
+                
+                // Target: Keep the active word around the top 30% of the visible area
+                const targetScroll = elTop - (containerHeight * 0.3);
+                
+                // Only scroll if it's significantly outside the current view to reduce jitter
+                const currentScroll = container.scrollTop;
+                if (Math.abs(currentScroll - targetScroll) > 20) {
+                    container.scrollTo({
+                        top: targetScroll,
+                        behavior: 'smooth'
+                    });
+                }
             }
         }, 50);
 
@@ -845,7 +860,10 @@ const VoiceTool = () => {
                             </div>
                         </div>
 
-                        <div className="h-[550px] overflow-hidden rounded-3xl ring-1 ring-indigo-500/10 bg-slate-950/40 p-1 shadow-2xl backdrop-blur-2xl">
+                        <div 
+                            ref={previewContainerRef}
+                            className="h-[550px] overflow-hidden rounded-3xl ring-1 ring-indigo-500/10 bg-slate-950/40 p-1 shadow-2xl backdrop-blur-2xl relative"
+                        >
                             {isExtracting ? (
                                 <div className="flex flex-col items-center justify-center h-full gap-4 opacity-50">
                                     <div className="relative">
