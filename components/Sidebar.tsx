@@ -19,7 +19,10 @@ import {
   Hash,
   Tags,
   PackageOpen,
-  FileArchive
+  FileArchive,
+  FileAudio,
+  Palette,
+  Volume2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
@@ -129,6 +132,22 @@ const tools = [
     icon: FileArchive,
     color: 'text-indigo-500',
     bg: 'bg-indigo-500/10',
+  },
+  {
+    id: 'voice',
+    name: 'PDF Seslendir',
+    description: 'PDF metinlerini doğal bir sesle dinleyin.',
+    icon: Volume2,
+    color: 'text-blue-400',
+    bg: 'bg-blue-400/10',
+  },
+  {
+    id: 'color',
+    name: 'Renk Paleti',
+    description: 'PDF belgesindeki baskın renkleri analiz edin.',
+    icon: Palette,
+    color: 'text-cyan-500',
+    bg: 'bg-cyan-500/10',
   },
 ];
 

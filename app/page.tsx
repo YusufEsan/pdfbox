@@ -1,25 +1,28 @@
 'use client';
 
 import React, { useState } from 'react';
-// Tools
-import Sidebar from '../components/Sidebar';
-import ScrollToTop from '../components/ScrollToTop';
 import dynamic from 'next/dynamic';
-
-const MergeTool = dynamic(() => import('../components/tools/MergeTool'), { ssr: false });
-const DeleteTool = dynamic(() => import('../components/tools/DeleteTool'), { ssr: false });
-const WatermarkTool = dynamic(() => import('../components/tools/WatermarkTool'), { ssr: false });
-const RotateTool = dynamic(() => import('../components/tools/RotateTool'), { ssr: false });
-const SplitTool = dynamic(() => import('../components/tools/SplitTool'), { ssr: false });
-const ImageToPdfTool = dynamic(() => import('../components/tools/ImageToPdfTool'), { ssr: false });
-const ProtectTool = dynamic(() => import('../components/tools/ProtectTool'), { ssr: false });
-const PdfToImgTool = dynamic(() => import('../components/tools/PdfToImgTool'), { ssr: false });
-const ReorderTool = dynamic(() => import('../components/tools/ReorderPagesTool'), { ssr: false });
-const AddPageNumbersTool = dynamic(() => import('../components/tools/AddPageNumbersTool'), { ssr: false });
-const MetadataTool = dynamic(() => import('../components/tools/MetadataTool'), { ssr: false });
-const ExtractImagesTool = dynamic(() => import('../components/tools/ExtractImagesTool'), { ssr: false });
-const CompressTool = dynamic(() => import('../components/tools/CompressTool'), { ssr: false });
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Tools
+import Sidebar from '@/components/Sidebar';
+import ScrollToTop from '@/components/ScrollToTop';
+
+const MergeTool = dynamic(() => import('@/components/tools/MergeTool'), { ssr: false });
+const DeleteTool = dynamic(() => import('@/components/tools/DeleteTool'), { ssr: false });
+const WatermarkTool = dynamic(() => import('@/components/tools/WatermarkTool'), { ssr: false });
+const RotateTool = dynamic(() => import('@/components/tools/RotateTool'), { ssr: false });
+const SplitTool = dynamic(() => import('@/components/tools/SplitTool'), { ssr: false });
+const ImageToPdfTool = dynamic(() => import('@/components/tools/ImageToPdfTool'), { ssr: false });
+const ProtectTool = dynamic(() => import('@/components/tools/ProtectTool'), { ssr: false });
+const PdfToImgTool = dynamic(() => import('@/components/tools/PdfToImgTool'), { ssr: false });
+const ReorderTool = dynamic(() => import('@/components/tools/ReorderPagesTool'), { ssr: false });
+const AddPageNumbersTool = dynamic(() => import('@/components/tools/AddPageNumbersTool'), { ssr: false });
+const MetadataTool = dynamic(() => import('@/components/tools/MetadataTool'), { ssr: false });
+const ExtractImagesTool = dynamic(() => import('@/components/tools/ExtractImagesTool'), { ssr: false });
+const CompressTool = dynamic(() => import('@/components/tools/CompressTool'), { ssr: false });
+const VoiceTool = dynamic(() => import('@/components/tools/VoiceTool'), { ssr: false });
+const ColorTool = dynamic(() => import('@/components/tools/ColorTool'), { ssr: false });
 
 export default function Home() {
   const [activeTool, setActiveTool] = useState('merge');
@@ -53,6 +56,8 @@ export default function Home() {
               {activeTool === 'metadata' && <MetadataTool />}
               {activeTool === 'extract-images' && <ExtractImagesTool />}
               {activeTool === 'compress' && <CompressTool />}
+              {activeTool === 'voice' && <VoiceTool />}
+              {activeTool === 'color' && <ColorTool />}
             </motion.div>
           </AnimatePresence>
         </div>

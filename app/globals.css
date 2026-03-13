@@ -78,8 +78,15 @@ body {
 }
 
 .glass {
-  @apply bg-white/70 dark:bg-black/70 backdrop-blur-md border border-white/20
-    dark:border-white/10;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Custom Modern Scrollbar */

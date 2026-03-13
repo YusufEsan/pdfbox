@@ -9,11 +9,13 @@ export default function FileUpload({
   onFilesSelected, 
   accept = ".pdf", 
   multiple = true,
+  disabled = false,
   label = "PDF dosyalarını buraya sürükleyin veya seçin"
 }: { 
   onFilesSelected: (files: File[]) => void;
   accept?: string;
   multiple?: boolean;
+  disabled?: boolean;
   label?: string;
 }) {
   const [isDragging, setIsDragging] = useState(false);
