@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.3";
+    const v = "1.9.4";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -56,6 +56,7 @@ const VoiceTool = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState("");
     const [freeText, setFreeText] = useState(""); // State for Manual Mode
+    const [volume, setVolume] = useState(1.0);
     const [status, setStatus] = useState<string>("");
     
     const isInitializingRef = useRef(false);
@@ -477,7 +478,7 @@ const VoiceTool = () => {
         source.buffer = buffer;
         
         const gainNode = audioContextRef.current.createGain();
-        gainNode.gain.value = 1.0;
+        gainNode.gain.value = volume;
         
         source.connect(gainNode);
         gainNode.connect(audioContextRef.current.destination);
@@ -513,12 +514,13 @@ const VoiceTool = () => {
                 
                 <div className="relative flex flex-col items-center gap-8 text-center">
                     {/* Mode Toggle */}
-                    <div className="flex bg-slate-900/40 p-1.5 rounded-2xl ring-1 ring-white/5 backdrop-blur-md">
+                    <div className="flex bg-slate-900/40 p-1.5 rounded-2xl ring-1 ring-white/5 backdrop-blur-md transition-all duration-500 overflow-hidden">
                         <Button
                             variant="ghost"
                             size="sm"
+                            disabled={!isEngineReady}
                             onClick={() => setMode('pdf')}
-                            className={`rounded-xl px-6 h-9 transition-all duration-300 ${mode === 'pdf' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            className={`rounded-xl px-6 h-9 transition-all duration-300 ${mode === 'pdf' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white disabled:opacity-30'}`}
                         >
                             <FileText className="w-4 h-4 mr-2" />
                             PDF Seslendirici
@@ -526,8 +528,9 @@ const VoiceTool = () => {
                         <Button
                             variant="ghost"
                             size="sm"
+                            disabled={!isEngineReady}
                             onClick={() => setMode('manual')}
-                            className={`rounded-xl px-6 h-9 transition-all duration-300 ${mode === 'manual' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            className={`rounded-xl px-6 h-9 transition-all duration-300 ${mode === 'manual' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white disabled:opacity-30'}`}
                         >
                             <Pencil className="w-4 h-4 mr-2" />
                             Serbest Metin
@@ -554,17 +557,25 @@ const VoiceTool = () => {
                         </div>
                     </div>
 
-                    {isModelLoading && (
-                        <div className="w-full space-y-2">
-                            <div className="flex items-center justify-center gap-2 text-primary font-medium">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span>{status}</span>
+                    {!isEngineReady ? (
+                        <div className="w-full py-12 flex flex-col items-center justify-center gap-6 animate-in fade-in zoom-in duration-1000">
+                             <div className="relative">
+                                <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+                                <Loader2 className="w-16 h-16 animate-spin text-primary relative" />
                             </div>
-                            <Progress value={progress || 10} className="h-2 w-full" />
+                            <div className="text-center space-y-2">
+                                <h3 className="text-xl font-bold text-slate-200">Sistem Hazırlanıyor...</h3>
+                                <p className="text-slate-500 text-sm max-w-[280px]">Türkçe Neural TTS motoru tarayıcınıza yükleniyor. Lütfen bekleyiniz.</p>
+                                <div className="mt-4 flex items-center justify-center gap-2 text-primary/70 text-xs font-mono bg-primary/5 py-1 px-3 rounded-full border border-primary/10">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                    </span>
+                                    {status || "Başlatılıyor"}
+                                </div>
+                            </div>
                         </div>
-                    )}
-
-                    {mode === 'pdf' ? (
+                    ) : mode === 'pdf' ? (
                         <div
                             onDragOver={(e) => e.preventDefault()}
                             onDrop={(e) => {
@@ -575,7 +586,7 @@ const VoiceTool = () => {
                                     handleFileChange(droppedFile);
                                 }
                             }}
-                            className={`w-full h-48 rounded-3xl border-2 border-dashed border-slate-800 transition-all duration-300 relative overflow-hidden flex flex-col items-center justify-center gap-4 group 
+                            className={`w-full h-48 rounded-3xl border-2 border-dashed border-slate-800 transition-all duration-300 relative overflow-hidden flex flex-col items-center justify-center gap-4 group animate-in fade-in slide-in-from-top-4
                                 ${isEngineReady 
                                     ? "hover:border-primary/50 bg-slate-900/10 cursor-pointer" 
                                     : "opacity-40 cursor-not-allowed bg-slate-900/5"}`}
@@ -598,16 +609,12 @@ const VoiceTool = () => {
                                 <Upload className="w-8 h-8 text-primary" />
                             </div>
                             <div className="text-center relative">
-                                <p className="font-semibold text-slate-300">
-                                    {!isEngineReady ? "Model yükleniyor..." : "PDF yüklemek için tıklayın veya sürükleyin"}
-                                </p>
-                                <p className="text-slate-500 text-sm">
-                                    {!isEngineReady ? "Motor hazır olana kadar bekleyiniz" : "Seslendirilecek metni pdf'den ayıklayalım"}
-                                </p>
+                                <p className="font-semibold text-slate-300">PDF yüklemek için tıklayın veya sürükleyin</p>
+                                <p className="text-slate-500 text-sm">Seslendirilecek metni pdf'den ayıklayalım</p>
                             </div>
                         </div>
                     ) : (
-                        <div className="w-full space-y-4">
+                        <div className="w-full space-y-4 animate-in fade-in slide-in-from-top-4">
                             <div className="h-[300px] overflow-hidden rounded-3xl ring-1 ring-indigo-500/10 bg-slate-950/40 p-1 shadow-2xl backdrop-blur-2xl">
                                 <textarea
                                     value={freeText}
@@ -680,6 +687,22 @@ const VoiceTool = () => {
                                         </>
                                     )}
                                 </Button>
+
+                                <div className="h-6 w-px bg-slate-800/50 mx-1" />
+
+                                <div className="flex items-center gap-3 bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-800/50">
+                                    <FileAudio className={`w-4 h-4 ${volume === 0 ? 'text-slate-500' : 'text-blue-400 animate-pulse-slow'}`} />
+                                    <Slider
+                                        value={[volume * 100]}
+                                        max={100}
+                                        step={1}
+                                        onValueChange={(vals) => setVolume(vals[0] / 100)}
+                                        className="w-24"
+                                    />
+                                    <span className="text-[10px] font-mono text-slate-500 w-8 text-right">
+                                        {Math.round(volume * 100)}%
+                                    </span>
+                                </div>
 
                                 <div className="h-6 w-px bg-slate-800/50 mx-1" />
 
