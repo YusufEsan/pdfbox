@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.0";
+    const v = "1.9.1";
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
     const [file, setFile] = useState<File | null>(null);
