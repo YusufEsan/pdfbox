@@ -323,10 +323,10 @@ const VoiceTool = () => {
         const engineConfig = {
             offlineTtsModelConfig: {
                 offlineTtsVitsModelConfig: {
-                    model: `${BP}/models/piper/tr_TR-fettah-medium.onnx`,
+                    model: '/model.onnx',
                     lexicon: '', // MUST BE EMPTY for Fettah
-                    tokens: `${BP}/models/piper/tokens.txt`,
-                    dataDir: `${BP}/lib/sherpa-onnx/espeak-ng-data`,
+                    tokens: '/tokens.txt',
+                    dataDir: '/espeak-ng-data',
                     dictDir: '',
                     noiseScale: 0.667,
                     noiseScaleW: 0.8,
