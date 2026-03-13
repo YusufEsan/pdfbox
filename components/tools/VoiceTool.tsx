@@ -666,7 +666,7 @@ const VoiceTool = () => {
 
                                 <Button
                                     onClick={() => speak()}
-                                    disabled={!freeText || (isPlaying && !isPaused) || !isEngineReady}
+                                    disabled={!freeText || !isEngineReady}
                                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-900/20 h-14 px-10 rounded-2xl gap-3 font-bold text-lg transition-all active:scale-95"
                                 >
                                     {isPlaying && !isPaused ? (
@@ -768,7 +768,7 @@ const VoiceTool = () => {
 
                                 <Button
                                     onClick={() => speak()}
-                                    disabled={!text || (isPlaying && !isPaused) || isExtracting || isEditing}
+                                    disabled={!text || isExtracting || isEditing || !isEngineReady}
                                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20 h-10 px-6 rounded-xl gap-2 font-semibold transition-all min-w-[120px]"
                                 >
                                     {isPlaying && !isPaused ? (
