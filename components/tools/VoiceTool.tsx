@@ -42,7 +42,8 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.1";
+    const v = "1.9.2";
+    const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
     const [file, setFile] = useState<File | null>(null);
@@ -191,12 +192,14 @@ const VoiceTool = () => {
                 const ts = Date.now();
                 
                 // Ensure WASM main is loaded exactly once
-                if (!w.Module) {
-                   await loadScript(`/lib/sherpa-onnx/sherpa-onnx-wasm-main-tts.js?v=${v}_${ts}`, "sherpa-wasm-main");
+                if (!document.getElementById("sherpa-wasm-main")) {
+                    await loadScript(`${BP}/lib/sherpa-onnx/sherpa-onnx-wasm-main-tts.js?v=${v}_${ts}`, "sherpa-wasm-main");
                 }
                 
                 console.log(`SherpaONNX: Loading FINAL bridge (v${v})...`);
-                await loadScript(`/lib/sherpa-onnx/sherpa-onnx-tts-v${v.replace(/\./g, '')}.js?v=${v}_${ts}`, "sherpa-bridge-v" + v);
+                if (!document.getElementById("sherpa-bridge-v" + v)) {
+                    await loadScript(`${BP}/lib/sherpa-onnx/sherpa-onnx-tts-v${v.replace(/\./g, '')}.js?v=${v}_${ts}`, "sherpa-bridge-v" + v);
+                }
                 
                 // Wait for bridge version to be set
                 let bridgeWait = 0;
@@ -266,18 +269,18 @@ const VoiceTool = () => {
         }
 
         const filesToLoad = [
-            { path: '/model.onnx', url: `/models/piper/tr_TR-fettah-medium.onnx?v=${v}` },
-            { path: '/model.onnx.json', url: `/models/piper/tr_TR-fettah-medium.onnx.json?v=${v}` },
-            { path: '/tokens.txt', url: `/models/piper/tokens.txt?v=${v}` },
-            { path: '/espeak-ng-data/phondata', url: '/lib/sherpa-onnx/espeak-ng-data/phondata' },
-            { path: '/espeak-ng-data/phonindex', url: '/lib/sherpa-onnx/espeak-ng-data/phonindex' },
-            { path: '/espeak-ng-data/phontab', url: '/lib/sherpa-onnx/espeak-ng-data/phontab' },
-            { path: '/espeak-ng-data/phondata-manifest', url: '/lib/sherpa-onnx/espeak-ng-data/phondata-manifest' },
-            { path: '/espeak-ng-data/intonations', url: '/lib/sherpa-onnx/espeak-ng-data/intonations' },
-            { path: '/espeak-ng-data/tr_dict', url: '/lib/sherpa-onnx/espeak-ng-data/tr_dict' },
-            { path: '/espeak-ng-data/en_dict', url: '/lib/sherpa-onnx/espeak-ng-data/en_dict' },
+            { path: '/model.onnx', url: `${BP}/models/piper/tr_TR-fettah-medium.onnx?v=${v}` },
+            { path: '/model.onnx.json', url: `${BP}/models/piper/tr_TR-fettah-medium.onnx.json?v=${v}` },
+            { path: '/tokens.txt', url: `${BP}/models/piper/tokens.txt?v=${v}` },
+            { path: '/espeak-ng-data/phondata', url: `${BP}/lib/sherpa-onnx/espeak-ng-data/phondata` },
+            { path: '/espeak-ng-data/phonindex', url: `${BP}/lib/sherpa-onnx/espeak-ng-data/phonindex` },
+            { path: '/espeak-ng-data/phontab', url: `${BP}/lib/sherpa-onnx/espeak-ng-data/phontab` },
+            { path: '/espeak-ng-data/phondata-manifest', url: `${BP}/lib/sherpa-onnx/espeak-ng-data/phondata-manifest` },
+            { path: '/espeak-ng-data/intonations', url: `${BP}/lib/sherpa-onnx/espeak-ng-data/intonations` },
+            { path: '/espeak-ng-data/tr_dict', url: `${BP}/lib/sherpa-onnx/espeak-ng-data/tr_dict` },
+            { path: '/espeak-ng-data/en_dict', url: `${BP}/lib/sherpa-onnx/espeak-ng-data/en_dict` },
             // Single Canonical Turkish Path to avoid FS conflicts (Errno 2)
-            { path: '/espeak-ng-data/lang/trk/tr', url: '/lib/sherpa-onnx/espeak-ng-data/lang/trk/tr' }
+            { path: '/espeak-ng-data/lang/trk/tr', url: `${BP}/lib/sherpa-onnx/espeak-ng-data/lang/trk/tr` }
         ];
 
         const fs = sherpaModule.FS;
@@ -320,11 +323,11 @@ const VoiceTool = () => {
         const engineConfig = {
             offlineTtsModelConfig: {
                 offlineTtsVitsModelConfig: {
-                    model: '/model.onnx',
+                    model: `${BP}/models/piper/tr_TR-fettah-medium.onnx`,
                     lexicon: '', // MUST BE EMPTY for Fettah
-                    tokens: '/tokens.txt',
-                    dataDir: '/espeak-ng-data',
-                    dictDir: '/espeak-ng-data',
+                    tokens: `${BP}/models/piper/tokens.txt`,
+                    dataDir: `${BP}/lib/sherpa-onnx/espeak-ng-data`,
+                    dictDir: '',
                     noiseScale: 0.667,
                     noiseScaleW: 0.8,
                     lengthScale: 1.0,
