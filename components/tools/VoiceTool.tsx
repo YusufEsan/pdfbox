@@ -2,10 +2,22 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  FileAudio, Play, Pause, Square, Loader2, 
-  Volume2, Settings2, Download, FileText,
-  SkipBack, SkipForward, Info, Trash2
-} from 'lucide-react';
+    FileAudio, 
+    Upload, 
+    Play, 
+    Square, 
+    Loader2, 
+    AlertCircle, 
+    Info,
+    Check,
+    Languages,
+    History,
+    FileText,
+    Pencil,
+    Save,
+    Type,
+    Pause
+} from "lucide-react";
 import * as pdfjs from 'pdfjs-dist';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -30,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.6.8";
+    const v = "1.8.0";
 
     const [file, setFile] = useState<File | null>(null);
     const [isExtracting, setIsExtracting] = useState(false);
@@ -39,7 +51,9 @@ const VoiceTool = () => {
     const [isEngineReady, setIsEngineReady] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [status, setStatus] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedText, setEditedText] = useState("");
+    const [status, setStatus] = useState<string>("");
     
     const isInitializingRef = useRef(false);
     
@@ -356,7 +370,8 @@ const VoiceTool = () => {
 
             const healedText = cleanTextForTTS(fullText);
             setText(healedText);
-            setStatus("Metin hazır (İyileştirildi)");
+            setEditedText(healedText);
+            setStatus("Metin yüklendi.");
         } catch (error) {
             toast({
                 title: "Hata",
@@ -370,7 +385,7 @@ const VoiceTool = () => {
     };
 
     const speak = async (overrideText: string = "") => {
-        const targetedText = overrideText || text;
+        const targetedText = overrideText || (isEditing ? editedText : text);
         if (!ttsEngineRef.current || !targetedText) return;
         
         if (isPlaying && !overrideText) { 
@@ -479,17 +494,21 @@ const VoiceTool = () => {
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
-            <Card className="p-8 border-dashed border-2 bg-gradient-to-br from-background/50 to-muted/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300">
-                <div className="flex flex-col items-center gap-6 text-center">
+            <Card className="p-8 border-none bg-indigo-950/10 backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] relative overflow-hidden">
+                {/* Brand Gradient Glow */}
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px]" />
+                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-600/10 rounded-full blur-[120px]" />
+                
+                <div className="relative flex flex-col items-center gap-6 text-center">
                     <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-amber-600 rounded-full blur opacity-25" />
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-25" />
                         <div className="relative bg-background rounded-full p-4 border border-border shadow-xl">
                             <FileAudio className="w-12 h-12 text-primary" />
                         </div>
                     </div>
                     
                     <div>
-                        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-amber-600">
+                        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
                             PDF Seslendirici
                         </h2>
                         <p className="text-muted-foreground max-w-md mx-auto mt-2">
@@ -517,8 +536,8 @@ const VoiceTool = () => {
             </Card>
 
             {file && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <Card className="p-6">
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                    <Card className="p-8 border-none bg-slate-900/30 backdrop-blur-2xl shadow-none">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
                             <div className="flex items-center gap-4">
                                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -528,16 +547,47 @@ const VoiceTool = () => {
                                     <h3 className="font-semibold">İçerik Önizleme</h3>
                                     <div className="flex items-center gap-2">
                                         <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tight px-1.5 h-4">{file.name}</Badge>
-                                        <span className="text-xs text-muted-foreground">{text?.length || 0} karakter</span>
+                                        <span className="text-xs text-slate-500 font-medium">
+                                            {(isEditing ? editedText : text).length.toLocaleString()} karakter
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 w-full md:w-auto">
-                                <Button 
-                                    className="flex-1 md:w-32 shadow-lg shadow-primary/20 bg-gradient-to-r from-red-600 to-amber-600"
-                                    disabled={!isEngineReady || !text || isExtracting}
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        if (isEditing) {
+                                            setText(editedText);
+                                        } else {
+                                            setEditedText(text);
+                                        }
+                                        setIsEditing(!isEditing);
+                                    }}
+                                    disabled={isExtracting || isPlaying}
+                                    className="h-10 px-4 bg-slate-900/50 border-slate-800 hover:bg-slate-800 text-slate-300 gap-2 rounded-xl transition-all"
+                                >
+                                    {isEditing ? (
+                                        <>
+                                            <Save className="w-4 h-4 text-emerald-500" />
+                                            Kaydet
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Pencil className="w-4 h-4 text-blue-400" />
+                                            Düzenle
+                                        </>
+                                    )}
+                                </Button>
+
+                                <div className="h-6 w-px bg-slate-800/50 mx-1" />
+
+                                <Button
                                     onClick={() => speak()}
+                                    disabled={!text || isPlaying || isExtracting || isEditing}
+                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20 h-10 px-6 rounded-xl gap-2 font-semibold transition-all"
                                 >
                                     {isPlaying ? (
                                         <><Pause className="mr-2 h-4 w-4" /> Duraklat</>
@@ -548,7 +598,7 @@ const VoiceTool = () => {
                                 <Button 
                                     variant="outline" 
                                     size="icon"
-                                    className="w-10 h-10 rounded-md border-border"
+                                    className="w-10 h-10 rounded-xl border-border bg-slate-900/50 hover:bg-slate-800"
                                     onClick={stop} 
                                     disabled={!isPlaying}
                                 >
@@ -557,24 +607,35 @@ const VoiceTool = () => {
                             </div>
                         </div>
 
-                        <div className="h-[500px] overflow-y-auto rounded-2xl ring-1 ring-white/5 bg-zinc-950/40 p-8 text-base leading-relaxed whitespace-pre-wrap font-sans antialiased shadow-2xl backdrop-blur-sm scrollbar-thin scrollbar-thumb-zinc-800">
+                        <div className="h-[550px] overflow-hidden rounded-3xl ring-1 ring-indigo-500/10 bg-slate-950/40 p-1 shadow-2xl backdrop-blur-2xl">
                             {isExtracting ? (
                                 <div className="flex flex-col items-center justify-center h-full gap-4 opacity-50">
                                     <div className="relative">
                                         <div className="absolute -inset-4 bg-primary/10 rounded-full blur-xl animate-pulse" />
                                         <Loader2 className="w-10 h-10 animate-spin text-primary relative" />
                                     </div>
-                                    <p className="text-muted-foreground font-medium">Metin analiz ediliyor...</p>
+                                    <p className="text-muted-foreground font-medium italic">Metin analiz ediliyor...</p>
                                 </div>
-                            ) : text || "Metin bulunamadı."}
+                            ) : isEditing ? (
+                                <textarea
+                                    value={editedText}
+                                    onChange={(e) => setEditedText(e.target.value)}
+                                    className="w-full h-full bg-transparent p-8 text-base leading-relaxed font-sans antialiased text-slate-300 outline-none resize-none scrollbar-thin scrollbar-thumb-slate-800 placeholder:text-slate-700"
+                                    placeholder="Düzenlemek istediğiniz metni buraya yazın..."
+                                />
+                            ) : (
+                                <div className="w-full h-full overflow-y-auto p-10 text-base leading-relaxed whitespace-pre-wrap font-sans antialiased scrollbar-thin scrollbar-thumb-slate-800 text-slate-300">
+                                    {text || "Metin bulunamadı."}
+                                </div>
+                            )}
                         </div>
                     </Card>
 
-                    <Alert className="bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900 mx-auto max-w-2xl">
-                        <Info className="h-4 w-4 text-amber-600" />
-                        <AlertTitle className="text-amber-700 dark:text-amber-400">Not</AlertTitle>
-                        <AlertDescription className="text-amber-600/80 dark:text-amber-500/80 text-xs text-center">
-                            Parçalama modu devrede: Çok uzun dökümanlar tarayıcı belleğini korumak için cümle cümle işlenir.
+                    <Alert className="bg-indigo-950/20 border-indigo-900/20 mx-auto max-w-2xl backdrop-blur-md shadow-lg">
+                        <Info className="h-4 w-4 text-indigo-400" />
+                        <AlertTitle className="text-indigo-300 font-bold">Ses Motoru Notu</AlertTitle>
+                        <AlertDescription className="text-slate-400 text-xs text-center">
+                            Piper Neural v1.7.0: Uzun dökümanlar tarayıcı belleğini korumak için semantik parçalara bölünerek işlenir.
                         </AlertDescription>
                     </Alert>
                 </div>
