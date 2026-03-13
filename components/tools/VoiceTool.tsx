@@ -442,6 +442,7 @@ const VoiceTool = () => {
             await speakSegment(currentIndexRef.current);
         } catch (error) {
             console.error("Seslendirme Hatası:", error);
+            const msg = error instanceof Error ? error.message : "Bilinmeyen hata";
             setIsPlaying(false);
             setIsPaused(false);
             setStatus(`Hata: ${msg}`);
