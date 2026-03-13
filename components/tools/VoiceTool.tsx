@@ -42,7 +42,7 @@ interface TTSResult {
 
 const VoiceTool = () => {
     // Definitive version for the Final Stand
-    const v = "1.9.9";
+    const v = "1.9.10";
     const BP = process.env.NODE_ENV === 'production' ? '/pdfbox' : '';
 
     const [mode, setMode] = useState<'pdf' | 'manual'>('pdf');
@@ -540,10 +540,11 @@ const VoiceTool = () => {
             
             setActiveWordIndex(wordIdx);
             
-            // Auto-scroll highlight into view
+            // v1.9.10: Auto-scroll highlight into view (Internal container only)
             const activeEl = document.getElementById(`word-${index}-${wordIdx}`);
             if (activeEl) {
-                activeEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                // 'nearest' prevents global page snapping while keeping the word in the visible part of the container
+                activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
             }
         }, 50);
 
@@ -753,8 +754,8 @@ const VoiceTool = () => {
                 </div>
             </Card>
 
-            {(mode === 'pdf' || freeText) && (
-                <div className={`mt-6 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700 ${mode === 'manual' && (isPlaying || activeSentenceIndex !== null) ? 'block' : (mode === 'manual' ? 'hidden' : 'block')}`}>
+            {((mode === 'pdf' && file) || (mode === 'manual' && (isPlaying || isPaused || activeSentenceIndex !== null))) && (
+                <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
                     <Card className="p-8 border-none bg-slate-900/30 backdrop-blur-2xl shadow-none">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
                             <div className="flex items-center gap-4">
