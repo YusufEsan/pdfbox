@@ -45,57 +45,52 @@
 
 Projede yer alan tüm PDF araçlarının ekran görüntülerine aşağıdan ulaşabilirsiniz:
 
-<details>
-  <summary>🔍 Ekran Görüntülerini Göster</summary>
-  <br/>
-  
-  ### 📎 PDF Birleştirme
-  ![PDF Birleştirme](screenshot/pdf-merge.png)
-  
-  ### ✂️ PDF Böl
-  ![PDF Böl](screenshot/pdf-split.png)
-  
-  ### 🔄 PDF Döndür
-  ![PDF Döndür 1](screenshot/pdf-rotate-1.png)
-  ![PDF Döndür 2](screenshot/pdf-rotate-2.png)
-  
-  ### 💧 Filigran Ekle
-  ![Filigran Ekle](screenshot/pdf-watermark.png)
-  
-  ### 🖼️ Görselden PDF'e
-  ![Görselden PDF'e](screenshot/image-to-pdf.png)
-  
-  ### 📷 PDF'den Görsele
-  ![PDF'den Görsele](screenshot/pdf-to-image.png)
-  
-  ### 🔒 PDF Şifreleme
-  ![PDF Şifreleme](screenshot/pdf-encrypt.png)
-  
-  ### 🔀 Sayfa Sıralama
-  ![Sayfa Sıralama](screenshot/pdf-page-sort.png)
-  
-  ### ✂️ Sayfa Silme
-  ![Sayfa Silme](screenshot/pdf-page-delete.png)
-  
-  ### 🔢 Sayfa Numarası
-  ![Sayfa Numarası](screenshot/pdf-page-number.png)
-  
-  ### 🎙️ PDF Seslendir
-  ![PDF Seslendir](screenshot/pdf-read-aloud.png)
-  
-  ### 📦 PDF Sıkıştır
-  ![PDF Sıkıştır 1](screenshot/image-compress-1.png)
-  ![PDF Sıkıştır 2](screenshot/image-compress-2.png)
-  
-  ### 📝 Metadata Düzenle
-  ![Metadata Düzenle](screenshot/pdf-metadata-edit.png)
-  
-  ### 🎨 Renk Paleti
-  ![Renk Paleti](screenshot/color-palette.png)
-  
-  ### 🖼️ Görselleri Ayıkla
-  ![Görselleri Ayıkla](screenshot/pdf-extract-images.png)
-</details>
+### 📎 PDF Birleştirme
+![PDF Birleştirme](screenshot/pdf-merge.png)
+
+### ✂️ PDF Böl
+![PDF Böl](screenshot/pdf-split.png)
+
+### 🔄 PDF Döndür
+![PDF Döndür 1](screenshot/pdf-rotate-1.png)
+![PDF Döndür 2](screenshot/pdf-rotate-2.png)
+
+### 💧 Filigran Ekle
+![Filigran Ekle](screenshot/pdf-watermark.png)
+
+### 🖼️ Görselden PDF'e
+![Görselden PDF'e](screenshot/image-to-pdf.png)
+
+### 📷 PDF'den Görsele
+![PDF'den Görsele](screenshot/pdf-to-image.png)
+
+### 🔒 PDF Şifreleme
+![PDF Şifreleme](screenshot/pdf-encrypt.png)
+
+### 🔀 Sayfa Sıralama
+![Sayfa Sıralama](screenshot/pdf-page-sort.png)
+
+### ✂️ Sayfa Silme
+![Sayfa Silme](screenshot/pdf-page-delete.png)
+
+### 🔢 Sayfa Numarası
+![Sayfa Numarası](screenshot/pdf-page-number.png)
+
+### 🎙️ PDF Seslendir
+![PDF Seslendir](screenshot/pdf-read-aloud.png)
+
+### 📦 PDF Sıkıştır
+![PDF Sıkıştır 1](screenshot/image-compress-1.png)
+![PDF Sıkıştır 2](screenshot/image-compress-2.png)
+
+### 📝 Metadata Düzenle
+![Metadata Düzenle](screenshot/pdf-metadata-edit.png)
+
+### 🎨 Renk Paleti
+![Renk Paleti](screenshot/color-palette.png)
+
+### 🖼️ Görselleri Ayıkla
+![Görselleri Ayıkla](screenshot/pdf-extract-images.png)
 
 ---
 
